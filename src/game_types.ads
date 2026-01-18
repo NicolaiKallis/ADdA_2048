@@ -4,14 +4,19 @@ pragma SPARK_Mode (On);
 
 package Game_Types is
 
-   -- Cell_Value represents the value in a single board cell
+   -- MARK: Cell Specifications
+   Empty_Cell           : constant Cell_Value := 0;
+   Min_Valid_Cell_Value : constant Cell_Value := 2;
+   Victory_Tile_Value   : constant Cell_Value := 2048;
+   -- Assumes standard 4x4 board size
    -- The maximum possible tile on a grid with k cells is 2k+1 (assuming the final tile to spawn is a "4").
    -- For an n×n square board, this is 2n^2+1.
    -- TODO: Determine the maximum possible tile value for a given board size.
-   type Cell_Value is new Natural range 0 .. 131_072;
-   Empty_Cell         : constant Cell_Value := 0;
-   Victory_Tile_Value : constant Cell_Value := 2048;
+   Max_Valid_Cell_Value : constant Cell_Value := 131_072;
 
+   type Cell_Value is new Natural range Empty_Cell .. Max_Valid_Cell_Value;
+
+   -- MARK: Board Specifications
    -- TODO: Determine the board size based on user input.
    Board_Size : constant := 4;
    type Board_Index is range 1 .. Board_Size;
@@ -32,6 +37,9 @@ package Game_Types is
    end record;
 
    function Is_Valid_Cell_Value (Value : Cell_Value) return Boolean;
+
+   function Is_Cell_Empty (Value : Cell_Value) return Boolean
+   is (Value = Empty_Cell);
 
    function Is_Valid_Board (Board : Board_Type) return Boolean
    with
