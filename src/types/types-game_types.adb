@@ -1,11 +1,10 @@
 pragma SPARK_Mode (On);
 
-package body Game_Types is
-
+package body Types.Game_Types is
 
    -- local helper to prove that a cell value is a power of 2
    -- TODO: How do I mark this more clearly as a local helper?
-   function _Is_Power_Of_Two_Division (Value : Cell_Value) return Boolean is
+   function Is_Power_Of_Two_Division (Value : Cell_Value) return Boolean is
       Temp     : Cell_Value := Value;
       Original : constant Cell_Value := Value;
    begin
@@ -19,10 +18,6 @@ package body Game_Types is
       end if;
 
       -- Keep dividing by 2 until we reach 1 or find an odd number
-      -- Loop invariant explanation:
-      --   1. Temp starts at Value and decreases by half each iteration
-      --   2. If Value is a power of 2, Temp will eventually become 1
-      --   3. If Value is NOT a power of 2, we'll hit an odd number > 1
       while Temp > 1 loop
 
          pragma Loop_Invariant (Temp >= 1 and Temp <= Value);
@@ -39,7 +34,7 @@ package body Game_Types is
 
       -- If we reached 1, Value was a power of 2
       return True;
-   end _Is_Power_Of_Two_Division;
+   end Is_Power_Of_Two_Division;
 
    function Is_Valid_Cell_Value (Value : Cell_Value) return Boolean is
    begin
@@ -52,7 +47,7 @@ package body Game_Types is
          return False;
       end if;
 
-      return _Is_Power_Of_Two_Division (Value);
+      return Is_Power_Of_Two_Division (Value);
    end Is_Valid_Cell_Value;
 
    function Is_Valid_Board (Board : Board_Type) return Boolean is
@@ -67,4 +62,4 @@ package body Game_Types is
       return True;
    end Is_Valid_Board;
 
-end Game_Types;
+end Types.Game_Types;

@@ -3,18 +3,18 @@
 with Ada.Text_IO;
 with Ada.Strings.Fixed;
 with Ada.Characters.Latin_1;
-with Game_Types;
+with Types.Game_Types;
 
 package body TUI.Display is
 
-   use type Game_Types.Cell_Value;
+   use Types.Game_Types;
 
    -- Format a cell value for display
    -- Empty cells show as dots, numbers are right-aligned
-   function Format_Cell (Value : Game_Types.Cell_Value) return String is
+   function Format_Cell (Value : Cell_Value) return String is
       Cell_Width : constant := 5;
    begin
-      if Value = Game_Types.Empty_Cell then
+      if Value = Empty_Cell then
          return ".... ";
       else
          declare
@@ -27,15 +27,15 @@ package body TUI.Display is
       end if;
    end Format_Cell;
 
-   procedure Show_Board (Board : Game_Types.Board_Type) is
+   procedure Show_Board (Board : Board_Type) is
       Horizontal_Line : constant String := "+-----+-----+-----+-----+";
       Vertical_Line   : constant String := "|";
    begin
       Ada.Text_IO.Put_Line (Horizontal_Line);
-      
-      for Row in Game_Types.Board_Index loop
+
+      for Row in Board_Index loop
          Ada.Text_IO.Put (Vertical_Line);
-         for Col in Game_Types.Board_Index loop
+         for Col in Board_Index loop
             Ada.Text_IO.Put (Format_Cell (Board (Row, Col)));
             Ada.Text_IO.Put (Vertical_Line);
          end loop;
@@ -58,7 +58,7 @@ package body TUI.Display is
       Ada.Text_IO.Put (Ada.Characters.Latin_1.ESC & "[2J" & Ada.Characters.Latin_1.ESC & "[H");
    end Clear_Screen;
 
-   procedure Show_Game (Board : Game_Types.Board_Type) is
+   procedure Show_Game (Board : Board_Type) is
       -- Static values for now as requested
       High_Score : constant Natural := 2048;
       Moves      : constant Natural := 42;

@@ -1,4 +1,4 @@
-with Game_Types; use Game_Types;
+with Types.Game_Types; use Types.Game_Types;
 
 package Logic.Random is
 
@@ -24,7 +24,7 @@ private
    function Count_Empty_Cells (Board : Board_Type) return Natural;
 
    procedure Get_Empty_Cell
-     (Board  : Game_Types.Board_Type;
+     (Board  : Board_Type;
       N      : Positive;
       Row    : out Board_Index;
       Column : out Board_Index)

@@ -1,20 +1,20 @@
--- Core type definitions for 2048 game
-
 pragma SPARK_Mode (On);
 
-package Game_Types is
+package Types.Game_Types is
 
    -- MARK: Cell Specifications
-   Empty_Cell           : constant Cell_Value := 0;
-   Min_Valid_Cell_Value : constant Cell_Value := 2;
-   Victory_Tile_Value   : constant Cell_Value := 2048;
-   -- Assumes standard 4x4 board size
+   -- Base type so constants can be defined before the constrained Cell_Value subtype.
+   type Cell_Value_Base is new Natural;
+
+   Empty_Cell           : constant Cell_Value_Base := 0;
+   Min_Valid_Cell_Value : constant Cell_Value_Base := 2;
+   Victory_Tile_Value   : constant Cell_Value_Base := 2048;
    -- The maximum possible tile on a grid with k cells is 2k+1 (assuming the final tile to spawn is a "4").
    -- For an n×n square board, this is 2n^2+1.
    -- TODO: Determine the maximum possible tile value for a given board size.
-   Max_Valid_Cell_Value : constant Cell_Value := 131_072;
+   Max_Valid_Cell_Value : constant Cell_Value_Base := 131_072;
 
-   type Cell_Value is new Natural range Empty_Cell .. Max_Valid_Cell_Value;
+   subtype Cell_Value is Cell_Value_Base range Empty_Cell .. Max_Valid_Cell_Value;
 
    -- MARK: Board Specifications
    -- TODO: Determine the board size based on user input.
@@ -50,4 +50,4 @@ package Game_Types is
                Is_Valid_Cell_Value (Board (Row, Col))));
 
 
-end Game_Types;
+end Types.Game_Types;
