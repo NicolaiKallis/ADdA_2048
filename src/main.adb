@@ -1,12 +1,10 @@
-with Game_Types;
 with TUI.Display;
+with Types.Game_Types; use Types.Game_Types;
+with Logic.Game;
 
 procedure Main is
-   Static_Board : constant Game_Types.Board_Type :=
-     ((2,    4,    8,    16),
-      (4,    8,    16,   32),
-      (8,    16,   32,   64),
-      (16,   32,   64,   128));
+   Board : Board_Type;
 begin
-   TUI.Display.Show_Game (Static_Board);
+   Logic.Game.Initialize_Board (Board);
+   TUI.Display.Show_Game (Board);
 end Main;
