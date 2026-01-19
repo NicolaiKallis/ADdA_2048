@@ -12,12 +12,17 @@ project Adda_2048 is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("Ada") use Adda_2048_Config.Ada_Compiler_Switches;
+      for Default_Switches ("Ada") use 
+        Adda_2048_Config.Ada_Compiler_Switches & ("-gnatX"); 
    end Compiler;
 
    package Binder is
       for Switches ("Ada") use ("-Es"); --  Symbolic traceback
    end Binder;
+
+   package Prove is
+      for Default_Switches ("Ada") use ("--mode=check");
+   end Prove;
 
    package Install is
       for Artifacts (".") use ("share");
