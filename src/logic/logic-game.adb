@@ -1,5 +1,6 @@
 with Logic.Random;
 with Types.Game_Types; use Types.Game_Types;
+with Logic.User;       use Logic.User;
 
 package body Logic.Game is
 
@@ -51,6 +52,52 @@ package body Logic.Game is
       Ignored := Add_Random_Tile (Board);
    end Initialize_Board;
 
+   procedure Process_Move
+     (Board : in out Board_Type; UserInput : Input_Command) is
+   begin
+      case UserInput is
+         when Move_Up     =>
+            Move_Tiles (Board, Up);
+
+         when Move_Down   =>
+            Move_Tiles (Board, Down);
+
+         when Move_Left   =>
+            Move_Tiles (Board, Left);
+
+         when Move_Right  =>
+            Move_Tiles (Board, Right);
+
+         when Cmd_Restart =>
+            -- TODO: Reset score and moves
+            Initialize_Board (Board);
+
+         when Cmd_Quit    =>
+            Exit_Game;
+
+         when Cmd_Invalid =>
+            raise Invalid_Input_Error;
+      end case;
+   end Process_Move;
+
+   -- TODO: Add move tiles commands -> IMplement generic method for move tiles
+   procedure Move_Tiles (Board : in out Board_Type; Direction : Direction_Type)
+   is
+   begin
+      case Direction is
+         when Up    =>
+            Move_Tiles_Up (Board);
+
+         when Down  =>
+            Move_Tiles_Down (Board);
+
+         when Left  =>
+            Move_Tiles_Left (Board);
+
+         when Right =>
+            Move_Tiles_Right (Board);
+      end case;
+   end Move_Tiles;
    function Add_Random_Tile (Board : in out Board_Type) return Boolean is
       C   : constant Natural := Count_Empty_Cells (Board);
       N   : Positive;

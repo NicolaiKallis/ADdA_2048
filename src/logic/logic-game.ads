@@ -20,6 +20,22 @@ package Logic.Game is
    function Add_Random_Tile (Board : in out Board_Type) return Boolean
    with Pre => Is_Valid_Board (Board) and then not Is_Board_Full (Board);
 
+   function Process_Move
+     (Board : in out Board_Type; Direction : Direction_Type) return Boolean
+   with
+     Pre =>
+       Is_Valid_Board (Board) and then Is_Move_Possible (Board, Direction);
+
+   procedure Move_Tiles (Board : in out Board_Type; Direction : Direction_Type)
+   with
+     Pre =>
+       Is_Valid_Board (Board) and then Is_Move_Possible (Board, Direction);
+
+   function Is_Move_Possible
+     (Board : Board_Type; Direction : Direction_Type) return Boolean
+   with Pre => Is_Valid_Board (Board);
+
+
 private
 
    procedure Get_Empty_Cell

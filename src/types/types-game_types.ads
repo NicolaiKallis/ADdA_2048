@@ -27,7 +27,7 @@ package Types.Game_Types is
    type Score_Type is range 0 .. 10_000_000;
    type Move_Count_Type is range 0 .. 1_000_000;
 
-   type Direction is (Up, Down, Left, Right);
+   type Direction_Type is (Up, Down, Left, Right);
 
    type Game_Status is (Playing, Victory_Achieved, Continuing, Game_Over);
    type Game_State is record
