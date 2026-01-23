@@ -80,22 +80,180 @@ package body Logic.Game is
       end case;
    end Process_Move;
 
-   -- TODO: Add move tiles commands -> IMplement generic method for move tiles
-   procedure Move_Tiles (Board : in out Board_Type; Direction : Direction_Type)
+   -- A slice of the Board is either a row or a column.
+   type Slice_Type is array (Board_Index) of Cell_Value;
+
+   procedure Slide_And_Merge (Line : in out Slice_Type) is
+      Write_Index : Board_Index := Board_Index'First;
+      Last_Merged : Board_Index := Board_Index'First;
+      Just_Merged : Boolean := False;
+   begin
+      for Read_Index in Board_Index loop
+         declare
+            Read_Index_Cell_Value : constant Cell_Value := Line (Read_Index);
+         begin
+            if not Is_Cell_Empty (Read_Index_Cell_Value) then
+               -- Try to merge with the tile we just wrote
+               if Write_Index > Board_Index'First
+                 and then Line (Write_Index - 1) = Read_Index_Cell_Value
+                 and then Last_Merged /= Write_Index - 1
+               then
+                  -- Merge with previous tile
+                  Line (Write_Index - 1) := 2 * Read_Index_Cell_Value;
+                  Line (Read_Index) := Empty_Cell;
+                  Last_Merged := Write_Index - 1;
+               else
+                  -- Move tile to write position
+                  if Read_Index /= Write_Index then
+                     Line (Write_Index) := Read_Index_Cell_Value;
+                     Line (Read_Index) := Empty_Cell;
+                  end if;
+                  Write_Index := Write_Index + 1;
+               end if;
+            end if;
+         end;
+      end loop;
+   end Slide_And_Merge;
+
+   -- Wrapper that handles direction by reversing the slice
+   procedure Process_Slice
+     (Slice : in out Slice_Type; Iterate_Ascending_Index : Boolean)
    is
+      procedure Reverse_Slice (S : in out Slice_Type) is
+         Temp : Cell_Value;
+      begin
+         for Idx in
+           Board_Index'First .. Board_Index'First + (Board_Size - 1) / 2
+         loop
+            Temp := S (Idx);
+            S (Idx) := S (Board_Index'Last - (Idx - Board_Index'First));
+            S (Board_Index'Last - (Idx - Board_Index'First)) := Temp;
+         end loop;
+      end Reverse_Slice;
+   begin
+      if Iterate_Ascending_Index then
+         Slide_And_Merge (Slice);
+      else
+         Reverse_Slice (Slice);
+         Slide_And_Merge (Slice);
+         Reverse_Slice (Slice);
+      end if;
+   end Process_Slice;
+
+
+   function Line_Would_Change
+     (Line : Slice_Type; Iterate_Ascending_Index : Boolean) return Boolean
+   is
+      Copy : Slice_Type := Line;
+   begin
+      Process_Slice (Copy, Iterate_Ascending_Index);
+      return Copy /= Line;
+   end Line_Would_Change;
+
+   function Is_Move_Possible
+     (Board : Board_Type; Direction : Direction_Type) return Boolean
+   is
+      Slice : Slice_Type;
    begin
       case Direction is
          when Up    =>
-            Move_Tiles_Up (Board);
+            for C in Board_Index loop
+               for R in Board_Index loop
+                  Slice (R) := Board (R, C);
+               end loop;
+               if Line_Would_Change (Slice, Iterate_Ascending_Index => True)
+               then
+                  return True;
+               end if;
+            end loop;
 
          when Down  =>
-            Move_Tiles_Down (Board);
+            for C in Board_Index loop
+               for R in Board_Index loop
+                  Slice (R) := Board (R, C);
+               end loop;
+               if Line_Would_Change (Slice, Iterate_Ascending_Index => False)
+               then
+                  return True;
+               end if;
+            end loop;
 
          when Left  =>
-            Move_Tiles_Left (Board);
+            for R in Board_Index loop
+               for C in Board_Index loop
+                  Slice (C) := Board (R, C);
+               end loop;
+               if Line_Would_Change (Slice, Iterate_Ascending_Index => True)
+               then
+                  return True;
+               end if;
+            end loop;
 
          when Right =>
-            Move_Tiles_Right (Board);
+            for R in Board_Index loop
+               for C in Board_Index loop
+                  Slice (C) := Board (R, C);
+               end loop;
+               if Line_Would_Change (Slice, Iterate_Ascending_Index => False)
+               then
+                  return True;
+               end if;
+            end loop;
+      end case;
+      return False;
+   end Is_Move_Possible;
+
+   --  Generic move: for any Board_Size, process rows or columns depending on
+   --  Direction. Each line is processed with Process_Line; tiles stop at
+   --  Reached_Board_End, Merged_With_Tile, or Blocked_By_Tile (see Tile_Stop_Reason).
+   procedure Move_Tiles (Board : in out Board_Type; Direction : Direction_Type)
+   is
+      Line : Slice_Type;
+   begin
+      case Direction is
+         when Up    =>
+            for C in Board_Index loop
+               for R in Board_Index loop
+                  Line (R) := Board (R, C);
+               end loop;
+               Process_Line (Line, Iterate_Ascending_Index => True);
+               for R in Board_Index loop
+                  Board (R, C) := Line (R);
+               end loop;
+            end loop;
+
+         when Down  =>
+            for C in Board_Index loop
+               for R in Board_Index loop
+                  Line (R) := Board (R, C);
+               end loop;
+               Process_Line (Line, Iterate_Ascending_Index => False);
+               for R in Board_Index loop
+                  Board (R, C) := Line (R);
+               end loop;
+            end loop;
+
+         when Left  =>
+            for R in Board_Index loop
+               for C in Board_Index loop
+                  Line (C) := Board (R, C);
+               end loop;
+               Process_Line (Line, Iterate_Ascending_Index => True);
+               for C in Board_Index loop
+                  Board (R, C) := Line (C);
+               end loop;
+            end loop;
+
+         when Right =>
+            for R in Board_Index loop
+               for C in Board_Index loop
+                  Line (C) := Board (R, C);
+               end loop;
+               Process_Line (Line, Iterate_Ascending_Index => False);
+               for C in Board_Index loop
+                  Board (R, C) := Line (C);
+               end loop;
+            end loop;
       end case;
    end Move_Tiles;
    function Add_Random_Tile (Board : in out Board_Type) return Boolean is

@@ -2,6 +2,9 @@ with Types.Game_Types; use Types.Game_Types;
 
 package Logic.Game is
 
+   type Cell_Constraint_Type is
+     (Blocked_By_Board, Merged_With_Tile, Blocked_By_Tile);
+
    function Count_Empty_Cells (Board : Board_Type) return Natural;
 
    function Is_Board_Full (Board : Board_Type) return Boolean;
