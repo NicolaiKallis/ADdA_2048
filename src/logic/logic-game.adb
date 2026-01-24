@@ -52,32 +52,15 @@ package body Logic.Game is
       Ignored := Add_Random_Tile (Board);
    end Initialize_Board;
 
-   procedure Process_Move
-     (Board : in out Board_Type; UserInput : Input_Command) is
+   function Process_Move
+     (Board : in out Board_Type; Direction : Direction_Type) return Boolean
+   is
+      Tile_Added : Boolean;
    begin
-      case UserInput is
-         when Move_Up     =>
-            Move_Tiles (Board, Up);
+      Move_Tiles (Board, Direction);
 
-         when Move_Down   =>
-            Move_Tiles (Board, Down);
-
-         when Move_Left   =>
-            Move_Tiles (Board, Left);
-
-         when Move_Right  =>
-            Move_Tiles (Board, Right);
-
-         when Cmd_Restart =>
-            -- TODO: Reset score and moves
-            Initialize_Board (Board);
-
-         when Cmd_Quit    =>
-            Exit_Game;
-
-         when Cmd_Invalid =>
-            raise Invalid_Input_Error;
-      end case;
+      Tile_Added := Add_Random_Tile (Board);
+      return Tile_Added;
    end Process_Move;
 
    -- A slice of the Board is either a row or a column.
@@ -204,7 +187,7 @@ package body Logic.Game is
    end Is_Move_Possible;
 
    --  Generic move: for any Board_Size, process rows or columns depending on
-   --  Direction. Each line is processed with Process_Line; tiles stop at
+   --  Direction. Each line is processed with Process_Slice; tiles stop at
    --  Reached_Board_End, Merged_With_Tile, or Blocked_By_Tile (see Tile_Stop_Reason).
    procedure Move_Tiles (Board : in out Board_Type; Direction : Direction_Type)
    is
@@ -216,7 +199,7 @@ package body Logic.Game is
                for R in Board_Index loop
                   Line (R) := Board (R, C);
                end loop;
-               Process_Line (Line, Iterate_Ascending_Index => True);
+               Process_Slice (Line, Iterate_Ascending_Index => True);
                for R in Board_Index loop
                   Board (R, C) := Line (R);
                end loop;
@@ -227,7 +210,7 @@ package body Logic.Game is
                for R in Board_Index loop
                   Line (R) := Board (R, C);
                end loop;
-               Process_Line (Line, Iterate_Ascending_Index => False);
+               Process_Slice (Line, Iterate_Ascending_Index => False);
                for R in Board_Index loop
                   Board (R, C) := Line (R);
                end loop;
@@ -238,7 +221,7 @@ package body Logic.Game is
                for C in Board_Index loop
                   Line (C) := Board (R, C);
                end loop;
-               Process_Line (Line, Iterate_Ascending_Index => True);
+               Process_Slice (Line, Iterate_Ascending_Index => True);
                for C in Board_Index loop
                   Board (R, C) := Line (C);
                end loop;
@@ -249,17 +232,18 @@ package body Logic.Game is
                for C in Board_Index loop
                   Line (C) := Board (R, C);
                end loop;
-               Process_Line (Line, Iterate_Ascending_Index => False);
+               Process_Slice (Line, Iterate_Ascending_Index => False);
                for C in Board_Index loop
                   Board (R, C) := Line (C);
                end loop;
             end loop;
       end case;
    end Move_Tiles;
+
    function Add_Random_Tile (Board : in out Board_Type) return Boolean is
       C   : constant Natural := Count_Empty_Cells (Board);
       N   : Positive;
-      R   : Board_Index;
+      Row : Board_Index;
       Col : Board_Index;
    begin
       if C = 0 then
@@ -267,8 +251,8 @@ package body Logic.Game is
       end if;
       N := Logic.Random.Random_Index (C);
       -- TODO: Need mapping to random index to static board index
-      Get_Empty_Cell (Board, N, R, Col);
-      Board (R, Col) := Logic.Random.Generate_Random_Cell_Value;
+      Get_Empty_Cell (Board, N, Row, Col);
+      Board (Row, Col) := Logic.Random.Generate_Random_Cell_Value;
       return True;
    end Add_Random_Tile;
 

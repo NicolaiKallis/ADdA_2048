@@ -1,6 +1,6 @@
 with Ada.Text_IO;
 with Ada.Characters.Handling;
-with Logic.User_Input; use Logic.User_Input;
+with Logic.User; use Logic.User;
 
 package body TUI.Input is
    procedure Get_User_Input (UserInput : out Input_Command) is
@@ -16,16 +16,16 @@ package body TUI.Input is
 
          case Char_Cmd is
             when 'W'    =>
-               UserInput := Move_Up;
+               UserInput := Cmd_Move_Up;
 
             when 'A'    =>
-               UserInput := Move_Left;
+               UserInput := Cmd_Move_Left;
 
             when 'S'    =>
-               UserInput := Move_Down;
+               UserInput := Cmd_Move_Down;
 
             when 'D'    =>
-               UserInput := Move_Right;
+               UserInput := Cmd_Move_Right;
 
             when 'Q'    =>
                UserInput := Cmd_Quit;
