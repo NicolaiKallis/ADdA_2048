@@ -77,9 +77,9 @@ package body Logic.Game is
    type Slice_Type is array (Board_Index) of Cell_Value;
 
    procedure Slide_And_Merge (Line : in out Slice_Type) is
-      Write_Index : Board_Index := Board_Index'First;
-      Last_Merged : Board_Index := Board_Index'First;
-      Just_Merged : Boolean := False;
+      Write_Index    : Board_Index := Board_Index'First;
+      Last_Merged    : Board_Index := Board_Index'First;
+      Any_Merge_Done : Boolean := False;
    begin
       for Read_Index in Board_Index loop
          declare
@@ -89,12 +89,14 @@ package body Logic.Game is
                -- Try to merge with the tile we just wrote
                if Write_Index > Board_Index'First
                  and then Line (Write_Index - 1) = Read_Index_Cell_Value
-                 and then Last_Merged /= Write_Index - 1
+                 and then (not Any_Merge_Done
+                           or else Last_Merged /= Write_Index - 1)
                then
                   -- Merge with previous tile
                   Line (Write_Index - 1) := 2 * Read_Index_Cell_Value;
                   Line (Read_Index) := Empty_Cell;
                   Last_Merged := Write_Index - 1;
+                  Any_Merge_Done := True;
                else
                   -- Move tile to write position
                   if Read_Index /= Write_Index then
