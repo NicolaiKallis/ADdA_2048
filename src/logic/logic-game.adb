@@ -63,23 +63,29 @@ package body Logic.Game is
    end Initialize_Board;
 
    function Process_Move
-     (Board : in out Board_Type; Direction : Direction_Type) return Boolean
+     (Board : in Out Board_Type;
+      Direction : Direction_Type;
+      Score : out Score_Type) return Boolean
    is
       Tile_Added : Boolean;
    begin
-      Move_Tiles (Board, Direction);
+      Move_Tiles (Board, Direction, Score);
 
       Tile_Added := Add_Random_Tile (Board);
       return Tile_Added;
    end Process_Move;
 
-   procedure Slide_And_Merge (Line : in out Slice_Type) is
+   procedure Slide_And_Merge
+     (Line : in out Slice_Type; Score : out Score_Type)
+   is
       subtype Write_Index_Type is
         Board_Index'Base range Board_Index'First .. Board_Index'Last + 1;
       Write_Index    : Write_Index_Type := Board_Index'First;
       Last_Merged    : Board_Index := Board_Index'First;
       Any_Merge_Done : Boolean := False;
+      Merged_Value   : Cell_Value;
    begin
+      Score := 0;
       for Read_Index in Board_Index loop
          declare
             Read_Index_Cell_Value : constant Cell_Value := Line (Read_Index);
@@ -92,10 +98,12 @@ package body Logic.Game is
                    (not Any_Merge_Done or else Last_Merged /= Write_Index - 1)
                then
                   -- Merge with previous tile
-                  Line (Write_Index - 1) := 2 * Read_Index_Cell_Value;
+                  Merged_Value := 2 * Read_Index_Cell_Value;
+                  Line (Write_Index - 1) := Merged_Value;
                   Line (Read_Index) := Empty_Cell;
                   Last_Merged := Write_Index - 1;
                   Any_Merge_Done := True;
+                  Score := Score + Score_Type (Merged_Value);
                else
                   -- Move tile to write position
                   if Read_Index /= Write_Index then
@@ -111,7 +119,9 @@ package body Logic.Game is
 
    -- Wrapper that handles direction by reversing the slice
    procedure Process_Slice
-     (Slice : in out Slice_Type; Iterate_Ascending_Index : Boolean)
+     (Slice : in out Slice_Type;
+      Iterate_Ascending_Index : Boolean;
+      Score : out Score_Type)
    is
       procedure Reverse_Slice (S : in out Slice_Type) is
          Temp : Cell_Value;
@@ -126,10 +136,10 @@ package body Logic.Game is
       end Reverse_Slice;
    begin
       if Iterate_Ascending_Index then
-         Slide_And_Merge (Slice);
+         Slide_And_Merge (Slice, Score);
       else
          Reverse_Slice (Slice);
-         Slide_And_Merge (Slice);
+         Slide_And_Merge (Slice, Score);
          Reverse_Slice (Slice);
       end if;
    end Process_Slice;
@@ -138,9 +148,10 @@ package body Logic.Game is
    function Line_Would_Change
      (Line : Slice_Type; Iterate_Ascending_Index : Boolean) return Boolean
    is
-      Copy : Slice_Type := Line;
+      Copy         : Slice_Type := Line;
+      Unused_Score : Score_Type;
    begin
-      Process_Slice (Copy, Iterate_Ascending_Index);
+      Process_Slice (Copy, Iterate_Ascending_Index, Unused_Score);
       return Copy /= Line;
    end Line_Would_Change;
 
@@ -200,17 +211,24 @@ package body Logic.Game is
    --  Generic move: for any Board_Size, process rows or columns depending on
    --  Direction. Each line is processed with Process_Slice; tiles stop at
    --  Reached_Board_End, Merged_With_Tile, or Blocked_By_Tile (see Tile_Stop_Reason).
-   procedure Move_Tiles (Board : in out Board_Type; Direction : Direction_Type)
+   procedure Move_Tiles
+     (Board : in out Board_Type;
+      Direction : Direction_Type;
+      Score : out Score_Type)
    is
-      Line : Slice_Type;
+      Line       : Slice_Type;
+      Line_Score : Score_Type;
    begin
+      Score := 0;
       case Direction is
          when Up    =>
             for C in Board_Index loop
                for R in Board_Index loop
                   Line (R) := Board (R, C);
                end loop;
-               Process_Slice (Line, Iterate_Ascending_Index => True);
+               Process_Slice (Line, Iterate_Ascending_Index => True,
+                              Score => Line_Score);
+               Score := Score + Line_Score;
                for R in Board_Index loop
                   Board (R, C) := Line (R);
                end loop;
@@ -221,7 +239,9 @@ package body Logic.Game is
                for R in Board_Index loop
                   Line (R) := Board (R, C);
                end loop;
-               Process_Slice (Line, Iterate_Ascending_Index => False);
+               Process_Slice (Line, Iterate_Ascending_Index => False,
+                              Score => Line_Score);
+               Score := Score + Line_Score;
                for R in Board_Index loop
                   Board (R, C) := Line (R);
                end loop;
@@ -232,7 +252,9 @@ package body Logic.Game is
                for C in Board_Index loop
                   Line (C) := Board (R, C);
                end loop;
-               Process_Slice (Line, Iterate_Ascending_Index => True);
+               Process_Slice (Line, Iterate_Ascending_Index => True,
+                              Score => Line_Score);
+               Score := Score + Line_Score;
                for C in Board_Index loop
                   Board (R, C) := Line (C);
                end loop;
@@ -243,7 +265,9 @@ package body Logic.Game is
                for C in Board_Index loop
                   Line (C) := Board (R, C);
                end loop;
-               Process_Slice (Line, Iterate_Ascending_Index => False);
+               Process_Slice (Line, Iterate_Ascending_Index => False,
+                              Score => Line_Score);
+               Score := Score + Line_Score;
                for C in Board_Index loop
                   Board (R, C) := Line (C);
                end loop;

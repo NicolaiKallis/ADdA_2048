@@ -22,20 +22,19 @@ package body Logic.User is
    end To_Direction;
 
    procedure Handle_User_Move
-     (State : in out Game_State; User_Move : User_Move_Type)
+     (State : in Out Game_State; User_Move : User_Move_Type)
    is
-      Direction : constant Direction_Type := To_Direction (User_Move);
-      Success   : Boolean;
+      Direction  : constant Direction_Type := To_Direction (User_Move);
+      Move_Score : Score_Type;
+      Success    : Boolean;
    begin
       if Logic.Game.Is_Move_Possible (State.Board, Direction) then
          Success :=
-           Logic.Game.Process_Move (State.Board, Direction);
+           Logic.Game.Process_Move (State.Board, Direction, Move_Score);
          State.Move_Count := State.Move_Count + 1;
-         if Success then
-            State.Score := State.Score + 1;
-            if State.Score > State.High_Score then
-               State.High_Score := State.Score;
-            end if;
+         State.Score := State.Score + Move_Score;
+         if State.Score > State.High_Score then
+            State.High_Score := State.Score;
          end if;
       end if;
    end Handle_User_Move;

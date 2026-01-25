@@ -31,12 +31,17 @@ package Logic.Game is
    with Pre => Is_Valid_Board (Board) and then not Is_Board_Full (Board);
 
    function Process_Move
-     (Board : in out Board_Type; Direction : Direction_Type) return Boolean
+     (Board : in Out Board_Type;
+      Direction : Direction_Type;
+      Score : out Score_Type) return Boolean
    with
      Pre =>
        Is_Valid_Board (Board) and then Is_Move_Possible (Board, Direction);
 
-   procedure Move_Tiles (Board : in out Board_Type; Direction : Direction_Type)
+   procedure Move_Tiles
+     (Board : in Out Board_Type;
+      Direction : Direction_Type;
+      Score : out Score_Type)
    with
      Pre =>
        Is_Valid_Board (Board) and then Is_Move_Possible (Board, Direction);
