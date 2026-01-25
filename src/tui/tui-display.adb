@@ -64,14 +64,40 @@ package body TUI.Display is
          & "[H");
    end Clear_Screen;
 
+   procedure Show_Status_Message (Status : Game_Status) is
+   begin
+      case Status is
+         when Playing          =>
+            Ada.Text_IO.Put_Line ("W/A/S/D: Move | R: Restart | Q: Quit");
+
+         when Victory_Achieved =>
+            Ada.Text_IO.Put_Line ("*** YOU WIN! ***");
+            Ada.Text_IO.Put_Line
+              ("C: Continue playing | R: Restart | Q: Quit");
+
+         when Continuing       =>
+            Ada.Text_IO.Put_Line ("Keep going for a higher score!");
+            Ada.Text_IO.Put_Line ("W/A/S/D: Move | R: Restart | Q: Quit");
+
+         when Game_Over        =>
+            Ada.Text_IO.Put_Line ("*** GAME OVER ***");
+            Ada.Text_IO.Put_Line ("No more moves available!");
+            Ada.Text_IO.Put_Line ("R: Restart | Q: Quit");
+      end case;
+   end Show_Status_Message;
+
    procedure Show_Game (State : Game_State) is
    begin
       Clear_Screen;
       Ada.Text_IO.Put_Line ("=== 2048 Game ===");
       Ada.Text_IO.New_Line;
       Show_Stats (State.Move_Count, State.High_Score);
+      Ada.Text_IO.Put ("Score: ");
+      Ada.Text_IO.Put_Line (Score_Type'Image (State.Score));
       Ada.Text_IO.New_Line;
       Show_Board (State.Board);
+      Ada.Text_IO.New_Line;
+      Show_Status_Message (State.Status);
    end Show_Game;
 
 end TUI.Display;

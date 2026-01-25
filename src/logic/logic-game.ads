@@ -31,17 +31,17 @@ package Logic.Game is
    with Pre => Is_Valid_Board (Board) and then not Is_Board_Full (Board);
 
    function Process_Move
-     (Board : in Out Board_Type;
+     (Board     : in out Board_Type;
       Direction : Direction_Type;
-      Score : out Score_Type) return Boolean
+      Score     : out Score_Type) return Boolean
    with
      Pre =>
        Is_Valid_Board (Board) and then Is_Move_Possible (Board, Direction);
 
    procedure Move_Tiles
-     (Board : in Out Board_Type;
+     (Board     : in out Board_Type;
       Direction : Direction_Type;
-      Score : out Score_Type)
+      Score     : out Score_Type)
    with
      Pre =>
        Is_Valid_Board (Board) and then Is_Move_Possible (Board, Direction);
@@ -49,6 +49,14 @@ package Logic.Game is
    function Is_Move_Possible
      (Board : Board_Type; Direction : Direction_Type) return Boolean
    with Pre => Is_Valid_Board (Board);
+
+   function Is_Any_Move_Possible (Board : Board_Type) return Boolean
+   with Pre => Is_Valid_Board (Board);
+
+   function Has_Victory_Tile (Board : Board_Type) return Boolean;
+
+   -- Call this after each move to detect victory or game over
+   procedure Update_Game_Status (State : in out Game_State);
 
 private
 

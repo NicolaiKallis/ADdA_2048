@@ -10,6 +10,7 @@ package Logic.User is
       Cmd_Move_Left,
       Cmd_Move_Right,
       Cmd_Restart,
+      Cmd_Continue,
       Cmd_Quit,
       Cmd_Invalid);
 

@@ -63,9 +63,9 @@ package body Logic.Game is
    end Initialize_Board;
 
    function Process_Move
-     (Board : in Out Board_Type;
+     (Board     : in out Board_Type;
       Direction : Direction_Type;
-      Score : out Score_Type) return Boolean
+      Score     : out Score_Type) return Boolean
    is
       Tile_Added : Boolean;
    begin
@@ -75,8 +75,7 @@ package body Logic.Game is
       return Tile_Added;
    end Process_Move;
 
-   procedure Slide_And_Merge
-     (Line : in out Slice_Type; Score : out Score_Type)
+   procedure Slide_And_Merge (Line : in out Slice_Type; Score : out Score_Type)
    is
       subtype Write_Index_Type is
         Board_Index'Base range Board_Index'First .. Board_Index'Last + 1;
@@ -119,9 +118,9 @@ package body Logic.Game is
 
    -- Wrapper that handles direction by reversing the slice
    procedure Process_Slice
-     (Slice : in out Slice_Type;
+     (Slice                   : in out Slice_Type;
       Iterate_Ascending_Index : Boolean;
-      Score : out Score_Type)
+      Score                   : out Score_Type)
    is
       procedure Reverse_Slice (S : in out Slice_Type) is
          Temp : Cell_Value;
@@ -212,9 +211,9 @@ package body Logic.Game is
    --  Direction. Each line is processed with Process_Slice; tiles stop at
    --  Reached_Board_End, Merged_With_Tile, or Blocked_By_Tile (see Tile_Stop_Reason).
    procedure Move_Tiles
-     (Board : in out Board_Type;
+     (Board     : in out Board_Type;
       Direction : Direction_Type;
-      Score : out Score_Type)
+      Score     : out Score_Type)
    is
       Line       : Slice_Type;
       Line_Score : Score_Type;
@@ -226,8 +225,8 @@ package body Logic.Game is
                for R in Board_Index loop
                   Line (R) := Board (R, C);
                end loop;
-               Process_Slice (Line, Iterate_Ascending_Index => True,
-                              Score => Line_Score);
+               Process_Slice
+                 (Line, Iterate_Ascending_Index => True, Score => Line_Score);
                Score := Score + Line_Score;
                for R in Board_Index loop
                   Board (R, C) := Line (R);
@@ -239,8 +238,8 @@ package body Logic.Game is
                for R in Board_Index loop
                   Line (R) := Board (R, C);
                end loop;
-               Process_Slice (Line, Iterate_Ascending_Index => False,
-                              Score => Line_Score);
+               Process_Slice
+                 (Line, Iterate_Ascending_Index => False, Score => Line_Score);
                Score := Score + Line_Score;
                for R in Board_Index loop
                   Board (R, C) := Line (R);
@@ -252,8 +251,8 @@ package body Logic.Game is
                for C in Board_Index loop
                   Line (C) := Board (R, C);
                end loop;
-               Process_Slice (Line, Iterate_Ascending_Index => True,
-                              Score => Line_Score);
+               Process_Slice
+                 (Line, Iterate_Ascending_Index => True, Score => Line_Score);
                Score := Score + Line_Score;
                for C in Board_Index loop
                   Board (R, C) := Line (C);
@@ -265,8 +264,8 @@ package body Logic.Game is
                for C in Board_Index loop
                   Line (C) := Board (R, C);
                end loop;
-               Process_Slice (Line, Iterate_Ascending_Index => False,
-                              Score => Line_Score);
+               Process_Slice
+                 (Line, Iterate_Ascending_Index => False, Score => Line_Score);
                Score := Score + Line_Score;
                for C in Board_Index loop
                   Board (R, C) := Line (C);
@@ -290,5 +289,54 @@ package body Logic.Game is
       Board (Row, Col) := Logic.Random.Generate_Random_Cell_Value;
       return True;
    end Add_Random_Tile;
+
+   function Is_Any_Move_Possible (Board : Board_Type) return Boolean is
+   begin
+      return
+        Is_Move_Possible (Board, Up)
+        or else Is_Move_Possible (Board, Down)
+        or else Is_Move_Possible (Board, Left)
+        or else Is_Move_Possible (Board, Right);
+   end Is_Any_Move_Possible;
+
+   function Has_Victory_Tile (Board : Board_Type) return Boolean is
+   begin
+      for R in Board_Index loop
+         for C in Board_Index loop
+            if Board (R, C) >= Victory_Tile_Value then
+               return True;
+            end if;
+         end loop;
+      end loop;
+      return False;
+   end Has_Victory_Tile;
+
+   -- Returns True only when victory is achieved for the first time
+   -- (status is Playing and board contains a victory tile)
+   function Is_First_Victory (State : Game_State) return Boolean is
+   begin
+      return State.Status = Playing and then Has_Victory_Tile (State.Board);
+   end Is_First_Victory;
+
+   procedure Update_Game_Status (State : in out Game_State) is
+   begin
+      case State.Status is
+         when Playing                      =>
+            if Is_First_Victory (State) then
+               State.Status := Victory_Achieved;
+            elsif not Is_Any_Move_Possible (State.Board) then
+               State.Status := Game_Over;
+            end if;
+
+         when Continuing                   =>
+            if not Is_Any_Move_Possible (State.Board) then
+               State.Status := Game_Over;
+            end if;
+
+         when Victory_Achieved | Game_Over =>
+            -- These states are terminal until user action (Continue/Restart)
+            null;
+      end case;
+   end Update_Game_Status;
 
 end Logic.Game;

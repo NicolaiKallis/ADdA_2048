@@ -22,7 +22,7 @@ package body Logic.User is
    end To_Direction;
 
    procedure Handle_User_Move
-     (State : in Out Game_State; User_Move : User_Move_Type)
+     (State : in out Game_State; User_Move : User_Move_Type)
    is
       Direction  : constant Direction_Type := To_Direction (User_Move);
       Move_Score : Score_Type;
@@ -36,26 +36,31 @@ package body Logic.User is
          if State.Score > State.High_Score then
             State.High_Score := State.Score;
          end if;
+         Logic.Game.Update_Game_Status (State);
       end if;
    end Handle_User_Move;
 
    function Handle_System_Cmd
-     (State : in out Game_State; Cmd : User_Cmd_Type)
-      return Boolean is
+     (State : in out Game_State; Cmd : User_Cmd_Type) return Boolean is
    begin
       case Cmd is
-         when Cmd_Restart =>
+         when Cmd_Restart  =>
             Logic.Game.Initialize_New_Game (State);
             return False;
 
-         when Cmd_Quit    =>
+         when Cmd_Continue =>
+            if State.Status = Victory_Achieved then
+               State.Status := Continuing;
+            end if;
+            return False;
+
+         when Cmd_Quit     =>
             return True;
       end case;
    end Handle_System_Cmd;
 
    function Handle_User_Input
-     (State : in out Game_State; User_Input : Input_Command)
-      return Boolean is
+     (State : in out Game_State; User_Input : Input_Command) return Boolean is
    begin
       case User_Input is
          when User_Move_Type =>
