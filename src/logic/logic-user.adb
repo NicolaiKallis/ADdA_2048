@@ -22,23 +22,31 @@ package body Logic.User is
    end To_Direction;
 
    procedure Handle_User_Move
-     (Board : in out Board_Type; Move : User_Move_Type)
+     (State : in out Game_State; User_Move : User_Move_Type)
    is
-      Direction : constant Direction_Type := To_Direction (Move);
+      Direction : constant Direction_Type := To_Direction (User_Move);
       Success   : Boolean;
    begin
-      if Logic.Game.Is_Move_Possible (Board, Direction) then
-         Success := Logic.Game.Process_Move (Board, Direction);
-
+      if Logic.Game.Is_Move_Possible (State.Board, Direction) then
+         Success :=
+           Logic.Game.Process_Move (State.Board, Direction);
+         State.Move_Count := State.Move_Count + 1;
+         if Success then
+            State.Score := State.Score + 1;
+            if State.Score > State.High_Score then
+               State.High_Score := State.Score;
+            end if;
+         end if;
       end if;
    end Handle_User_Move;
 
    function Handle_System_Cmd
-     (Board : in out Board_Type; Cmd : User_Cmd_Type) return Boolean is
+     (State : in out Game_State; Cmd : User_Cmd_Type)
+      return Boolean is
    begin
       case Cmd is
          when Cmd_Restart =>
-            Logic.Game.Initialize_Board (Board);
+            Logic.Game.Initialize_New_Game (State);
             return False;
 
          when Cmd_Quit    =>
@@ -47,15 +55,16 @@ package body Logic.User is
    end Handle_System_Cmd;
 
    function Handle_User_Input
-     (Board : in out Board_Type; UserInput : Input_Command) return Boolean is
+     (State : in out Game_State; User_Input : Input_Command)
+      return Boolean is
    begin
-      case UserInput is
+      case User_Input is
          when User_Move_Type =>
-            Handle_User_Move (Board, UserInput);
+            Handle_User_Move (State, User_Input);
             return False;
 
          when User_Cmd_Type  =>
-            return Handle_System_Cmd (Board, UserInput);
+            return Handle_System_Cmd (State, User_Input);
 
          when Cmd_Invalid    =>
             raise Invalid_Input_Error;

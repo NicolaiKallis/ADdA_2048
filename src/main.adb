@@ -1,22 +1,22 @@
-with TUI.Display;
-with TUI.Input;
+with TUI.Display;      use TUI.Display;
+with TUI.Input;        use TUI.Input;
+with Logic.User;       use Logic.User;
+with Logic.Game;       use Logic.Game;
 with Types.Game_Types; use Types.Game_Types;
-with Logic.Game;
-with Logic.User; use Logic.User;
 
 procedure Main is
-   Board      : Board_Type;
-   UserInput  : Input_Command;
-   Should_Quit : Boolean;
+   State      : Game_State;
+   User_Input : Input_Command;
+   Quit_Game  : Boolean;
 begin
-   Logic.Game.Initialize_Board (Board);
-   TUI.Display.Show_Game (Board);
+   Initialize_New_Game (State);
+   Show_Game (State);
 
    loop
-      TUI.Input.Get_User_Input (UserInput);
-      Should_Quit := Logic.User.Handle_User_Input (Board, UserInput);
-      exit when Should_Quit;
-      TUI.Display.Show_Game (Board);
+      Get_User_Input (User_Input);
+      Quit_Game := Handle_User_Input (State, User_Input);
+      exit when Quit_Game;
+      Show_Game (State);
    end loop;
 
 end Main;

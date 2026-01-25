@@ -19,7 +19,8 @@ package body TUI.Display is
       else
          declare
             Value_Str : constant String := Natural'Image (Natural (Value));
-            Trimmed   : constant String := Ada.Strings.Fixed.Trim (Value_Str, Ada.Strings.Left);
+            Trimmed   : constant String :=
+              Ada.Strings.Fixed.Trim (Value_Str, Ada.Strings.Left);
             Padding   : constant Natural := Cell_Width - Trimmed'Length;
          begin
             return (1 .. Padding => ' ') & Trimmed;
@@ -44,31 +45,33 @@ package body TUI.Display is
       end loop;
    end Show_Board;
 
-   procedure Show_Stats (High_Score : Natural; Moves : Natural) is
+   procedure Show_Stats (Move_Count : Move_Count_Type; High_Score : Score_Type)
+   is
    begin
       Ada.Text_IO.Put ("High Score: ");
-      Ada.Text_IO.Put (Natural'Image (High_Score));
+      Ada.Text_IO.Put (Score_Type'Image (High_Score));
       Ada.Text_IO.Put ("    Moves: ");
-      Ada.Text_IO.Put_Line (Natural'Image (Moves));
+      Ada.Text_IO.Put_Line (Move_Count_Type'Image (Move_Count));
    end Show_Stats;
 
    procedure Clear_Screen is
    begin
       -- ANSI escape sequence to clear screen and move cursor to top-left
-      Ada.Text_IO.Put (Ada.Characters.Latin_1.ESC & "[2J" & Ada.Characters.Latin_1.ESC & "[H");
+      Ada.Text_IO.Put
+        (Ada.Characters.Latin_1.ESC
+         & "[2J"
+         & Ada.Characters.Latin_1.ESC
+         & "[H");
    end Clear_Screen;
 
-   procedure Show_Game (Board : Board_Type) is
-      -- Static values for now as requested
-      High_Score : constant Natural := 2048;
-      Moves      : constant Natural := 42;
+   procedure Show_Game (State : Game_State) is
    begin
       Clear_Screen;
       Ada.Text_IO.Put_Line ("=== 2048 Game ===");
       Ada.Text_IO.New_Line;
-      Show_Stats (High_Score, Moves);
+      Show_Stats (State.Move_Count, State.High_Score);
       Ada.Text_IO.New_Line;
-      Show_Board (Board);
+      Show_Board (State.Board);
    end Show_Game;
 
 end TUI.Display;

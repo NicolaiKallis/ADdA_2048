@@ -31,9 +31,11 @@ package Types.Game_Types is
 
    type Game_Status is (Playing, Victory_Achieved, Continuing, Game_Over);
    type Game_State is record
-      Board  : Board_Type;
-      Score  : Score_Type := 0;
-      Status : Game_Status := Playing;
+      Board      : Board_Type;
+      Score      : Score_Type := 0;
+      High_Score : Score_Type := 0;
+      Move_Count : Move_Count_Type := 0;
+      Status     : Game_Status := Playing;
    end record;
 
    function Is_Valid_Cell_Value (Value : Cell_Value) return Boolean;

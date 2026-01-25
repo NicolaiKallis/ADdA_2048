@@ -44,6 +44,16 @@ package body Logic.Game is
       return Count_Empty_Cells (Board) = 0;
    end Is_Board_Full;
 
+   procedure Initialize_New_Game (State : out Game_State) is
+   begin
+      Initialize_Board (State.Board);
+      State.Status := Playing;
+      State.Score := 0;
+      -- TODO: Read high score from file
+      State.High_Score := 0;
+      State.Move_Count := 0;
+   end Initialize_New_Game;
+
    procedure Initialize_Board (Board : out Board_Type) is
       Ignored : Boolean;
    begin
