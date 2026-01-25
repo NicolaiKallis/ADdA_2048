@@ -73,11 +73,10 @@ package body Logic.Game is
       return Tile_Added;
    end Process_Move;
 
-   -- A slice of the Board is either a row or a column.
-   type Slice_Type is array (Board_Index) of Cell_Value;
-
    procedure Slide_And_Merge (Line : in out Slice_Type) is
-      Write_Index    : Board_Index := Board_Index'First;
+      subtype Write_Index_Type is
+        Board_Index'Base range Board_Index'First .. Board_Index'Last + 1;
+      Write_Index    : Write_Index_Type := Board_Index'First;
       Last_Merged    : Board_Index := Board_Index'First;
       Any_Merge_Done : Boolean := False;
    begin
@@ -89,8 +88,8 @@ package body Logic.Game is
                -- Try to merge with the tile we just wrote
                if Write_Index > Board_Index'First
                  and then Line (Write_Index - 1) = Read_Index_Cell_Value
-                 and then (not Any_Merge_Done
-                           or else Last_Merged /= Write_Index - 1)
+                 and then
+                   (not Any_Merge_Done or else Last_Merged /= Write_Index - 1)
                then
                   -- Merge with previous tile
                   Line (Write_Index - 1) := 2 * Read_Index_Cell_Value;
