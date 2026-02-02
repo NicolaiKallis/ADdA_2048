@@ -36,8 +36,13 @@ package body TUI.Input is
             when 'C'    =>
                UserInput := Cmd_Continue;
 
+            when 'U'    =>
+               UserInput := Cmd_Undo;
+
+            when 'Y'    =>
+               UserInput := Cmd_Redo;
+
             when others =>
-               -- edge case
                UserInput := Cmd_Invalid;
          end case;
       end if;

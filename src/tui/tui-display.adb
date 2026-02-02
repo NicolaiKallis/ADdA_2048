@@ -4,6 +4,7 @@ with Ada.Text_IO;
 with Ada.Strings.Fixed;
 with Ada.Characters.Latin_1;
 with Types.Game_Types;
+with Logic.History;
 
 package body TUI.Display is
 
@@ -64,25 +65,45 @@ package body TUI.Display is
          & "[H");
    end Clear_Screen;
 
+   procedure Show_Undo_Redo_Status is
+   begin
+      if Logic.History.Can_Undo or else Logic.History.Can_Redo then
+         Ada.Text_IO.Put ("| ");
+         if Logic.History.Can_Undo then
+            Ada.Text_IO.Put ("U: Undo ");
+         end if;
+         if Logic.History.Can_Redo then
+            Ada.Text_IO.Put ("Y: Redo ");
+         end if;
+      end if;
+   end Show_Undo_Redo_Status;
+
    procedure Show_Status_Message (Status : Game_Status) is
    begin
       case Status is
-         when Playing          =>
-            Ada.Text_IO.Put_Line ("W/A/S/D: Move | R: Restart | Q: Quit");
+         when Playing =>
+            Ada.Text_IO.Put ("W/A/S/D: Move | R: Restart | Q: Quit");
+            Show_Undo_Redo_Status;
+            Ada.Text_IO.New_Line;
 
          when Victory_Achieved =>
             Ada.Text_IO.Put_Line ("*** YOU WIN! ***");
-            Ada.Text_IO.Put_Line
-              ("C: Continue playing | R: Restart | Q: Quit");
+            Ada.Text_IO.Put ("C: Continue | R: Restart | Q: Quit");
+            Show_Undo_Redo_Status;
+            Ada.Text_IO.New_Line;
 
-         when Continuing       =>
+         when Continuing =>
             Ada.Text_IO.Put_Line ("Keep going for a higher score!");
-            Ada.Text_IO.Put_Line ("W/A/S/D: Move | R: Restart | Q: Quit");
+            Ada.Text_IO.Put ("W/A/S/D: Move | R: Restart | Q: Quit");
+            Show_Undo_Redo_Status;
+            Ada.Text_IO.New_Line;
 
-         when Game_Over        =>
+         when Game_Over =>
             Ada.Text_IO.Put_Line ("*** GAME OVER ***");
             Ada.Text_IO.Put_Line ("No more moves available!");
-            Ada.Text_IO.Put_Line ("R: Restart | Q: Quit");
+            Ada.Text_IO.Put ("R: Restart | Q: Quit");
+            Show_Undo_Redo_Status;
+            Ada.Text_IO.New_Line;
       end case;
    end Show_Status_Message;
 

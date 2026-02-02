@@ -2,6 +2,7 @@ with TUI.Display;      use TUI.Display;
 with TUI.Input;        use TUI.Input;
 with Logic.User;       use Logic.User;
 with Logic.Game;       use Logic.Game;
+with Logic.History;
 with Types.Game_Types; use Types.Game_Types;
 
 procedure Main is
@@ -15,15 +16,19 @@ procedure Main is
          when Playing | Continuing =>
             return True;
 
-         when Victory_Achieved     =>
+         when Victory_Achieved =>
             return User_Input in User_Cmd_Type;
 
-         when Game_Over            =>
-            return User_Input = Cmd_Restart or else User_Input = Cmd_Quit;
+         when Game_Over =>
+            return User_Input = Cmd_Restart
+              or else User_Input = Cmd_Quit
+              or else User_Input = Cmd_Undo
+              or else User_Input = Cmd_Redo;
       end case;
    end Should_Process_Input;
 
 begin
+   Logic.History.Initialize;
    Initialize_New_Game (State);
    Show_Game (State);
 

@@ -9,13 +9,15 @@ package Logic.User is
       Cmd_Move_Down,
       Cmd_Move_Left,
       Cmd_Move_Right,
+      Cmd_Undo,
+      Cmd_Redo,
       Cmd_Restart,
       Cmd_Continue,
       Cmd_Quit,
       Cmd_Invalid);
 
    subtype User_Move_Type is Input_Command range Cmd_Move_Up .. Cmd_Move_Right;
-   subtype User_Cmd_Type is Input_Command range Cmd_Restart .. Cmd_Quit;
+   subtype User_Cmd_Type is Input_Command range Cmd_Undo .. Cmd_Quit;
 
    -- dispatcher: routes Input_Command to appropriate handler
    -- Returns True if the game should quit
