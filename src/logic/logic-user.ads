@@ -22,15 +22,26 @@ package Logic.User is
    -- dispatcher: routes Input_Command to appropriate handler
    -- Returns True if the game should quit
    function Handle_User_Input
-     (State : in out Game_State; User_Input : Input_Command)
-      return Boolean;
+     (State : in out Game_State; User_Input : Input_Command) return Boolean
+   with
+     Pre  => Is_Valid_Board (State.Board),
+     Post =>
+       Is_Valid_Board (State.Board)
+       and then Handle_User_Input'Result = (User_Input = Cmd_Quit);
 
    -- Returns True if the game should quit
    function Handle_System_Cmd
-     (State : in out Game_State; Cmd : User_Cmd_Type)
-      return Boolean;
+     (State : in out Game_State; Cmd : User_Cmd_Type) return Boolean
+   with
+     Pre  => Is_Valid_Board (State.Board),
+     Post =>
+       Is_Valid_Board (State.Board)
+       and then Handle_System_Cmd'Result = (Cmd = Cmd_Quit);
 
    procedure Handle_User_Move
-     (State : in out Game_State; User_Move : User_Move_Type);
+     (State : in out Game_State; User_Move : User_Move_Type)
+   with
+     Pre  => Is_Valid_Board (State.Board),
+     Post => Is_Valid_Board (State.Board);
 
 end Logic.User;

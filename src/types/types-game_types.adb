@@ -2,9 +2,7 @@ pragma SPARK_Mode (On);
 
 package body Types.Game_Types is
 
-   -- local helper to prove that a cell value is a power of 2
-   -- TODO: How do I mark this more clearly as a local helper?
-   function Is_Power_Of_Two_Division (Value : Cell_Value) return Boolean is
+   function Is_Power_Of_Two (Value : Cell_Value) return Boolean is
       Temp     : Cell_Value := Value;
       Original : constant Cell_Value := Value;
    begin
@@ -34,7 +32,7 @@ package body Types.Game_Types is
 
       -- If we reached 1, Value was a power of 2
       return True;
-   end Is_Power_Of_Two_Division;
+   end Is_Power_Of_Two;
 
    function Is_Valid_Cell_Value (Value : Cell_Value) return Boolean is
    begin
@@ -47,7 +45,7 @@ package body Types.Game_Types is
          return False;
       end if;
 
-      return Is_Power_Of_Two_Division (Value);
+      return Is_Power_Of_Two (Value);
    end Is_Valid_Cell_Value;
 
    function Is_Valid_Board (Board : Board_Type) return Boolean is

@@ -6,10 +6,12 @@ with Types.Game_Types;
 package TUI.Display is
 
    -- Shows the board, high score, and move count
-   procedure Show_Game (State : Types.Game_Types.Game_State);
+   procedure Show_Game (State : Types.Game_Types.Game_State)
+   with Pre => Types.Game_Types.Is_Valid_Board (State.Board);
 
    -- Display just the board grid
-   procedure Show_Board (Board : Types.Game_Types.Board_Type);
+   procedure Show_Board (Board : Types.Game_Types.Board_Type)
+   with Pre => Types.Game_Types.Is_Valid_Board (Board);
 
    -- Display the statistics line (high score and moves)
    procedure Show_Stats

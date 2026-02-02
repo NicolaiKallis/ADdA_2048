@@ -14,7 +14,8 @@ package Types.Game_Types is
    -- TODO: Determine the maximum possible tile value for a given board size.
    Max_Valid_Cell_Value : constant Cell_Value_Base := 131_072;
 
-   subtype Cell_Value is Cell_Value_Base range Empty_Cell .. Max_Valid_Cell_Value;
+   subtype Cell_Value is
+     Cell_Value_Base range Empty_Cell .. Max_Valid_Cell_Value;
 
    -- MARK: Board Specifications
    -- TODO: Determine the board size based on user input.
@@ -38,10 +39,23 @@ package Types.Game_Types is
       Status     : Game_Status := Playing;
    end record;
 
-   function Is_Valid_Cell_Value (Value : Cell_Value) return Boolean;
+   function Is_Power_Of_Two (Value : Cell_Value) return Boolean
+   with
+     Post =>
+       (if Value = 0 then not Is_Power_Of_Two'Result)
+       and (if Value = 1 then Is_Power_Of_Two'Result);
+
+   function Is_Valid_Cell_Value (Value : Cell_Value) return Boolean
+   with
+     Post =>
+       Is_Valid_Cell_Value'Result
+       = (Value = Empty_Cell
+          or else
+            (Value >= Min_Valid_Cell_Value and then Is_Power_Of_Two (Value)));
 
    function Is_Cell_Empty (Value : Cell_Value) return Boolean
-   is (Value = Empty_Cell);
+   is (Value = Empty_Cell)
+   with Post => Is_Cell_Empty'Result = (Value = Empty_Cell);
 
    function Is_Valid_Board (Board : Board_Type) return Boolean
    with
