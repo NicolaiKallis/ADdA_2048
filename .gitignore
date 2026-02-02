@@ -3,4 +3,5 @@
 /alire/
 /config/
 .highscore
-
+.vscode/
+*.md
