@@ -1,6 +1,6 @@
 with Logic.Random;
+with Logic.Highscore;
 with Types.Game_Types; use Types.Game_Types;
-with Logic.User;       use Logic.User;
 
 package body Logic.Game is
 
@@ -49,8 +49,7 @@ package body Logic.Game is
       Initialize_Board (State.Board);
       State.Status := Playing;
       State.Score := 0;
-      -- TODO: Read high score from file
-      State.High_Score := 0;
+      State.High_Score := Logic.Highscore.Load_Highscore;
       State.Move_Count := 0;
    end Initialize_New_Game;
 
