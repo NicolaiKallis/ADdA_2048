@@ -17,12 +17,11 @@ package body Types.Game_Types is
 
       -- Keep dividing by 2 until we reach 1 or find an odd number
       while Temp > 1 loop
-
          pragma Loop_Invariant (Temp >= 1 and Temp <= Value);
-         pragma Loop_Invariant (Temp <= Value);
          pragma Loop_Invariant (Value = Original);
+         pragma Loop_Variant (Decreases => Temp);
 
-         -- if division result is and odd number, Value is not a power of 2
+         -- if division result is an odd number, Value is not a power of 2
          if Temp mod 2 /= 0 then
             return False;
          end if;
