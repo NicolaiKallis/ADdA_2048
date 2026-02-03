@@ -19,10 +19,19 @@ package Logic.User is
    subtype User_Move_Type is Input_Command range Cmd_Move_Up .. Cmd_Move_Right;
    subtype User_Cmd_Type is Input_Command range Cmd_Undo .. Cmd_Quit;
 
+   function To_Direction (Move : User_Move_Type) return Direction_Type;
+
+   -- Gate which inputs are processed based on game status
+   function Should_Process_Input
+     (State : Game_State; User_Input : Input_Command) return Boolean;
+
    -- dispatcher: routes Input_Command to appropriate handler
    -- Returns True if the game should quit
+   -- Move_Executed is True if a move command actually changed the board
    function Handle_User_Input
-     (State : in out Game_State; User_Input : Input_Command) return Boolean
+     (State         : in out Game_State;
+      User_Input    : Input_Command;
+      Move_Executed : out Boolean) return Boolean
    with
      Pre  => Is_Valid_Board (State.Board),
      Post =>
@@ -38,8 +47,11 @@ package Logic.User is
        Is_Valid_Board (State.Board)
        and then Handle_System_Cmd'Result = (Cmd = Cmd_Quit);
 
+   -- Move_Executed is True if the move actually changed the board
    procedure Handle_User_Move
-     (State : in out Game_State; User_Move : User_Move_Type)
+     (State         : in out Game_State;
+      User_Move     : User_Move_Type;
+      Move_Executed : out Boolean)
    with
      Pre  => Is_Valid_Board (State.Board),
      Post => Is_Valid_Board (State.Board);

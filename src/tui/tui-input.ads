@@ -6,7 +6,10 @@ package TUI.Input is
    -- procedure instead of function to adhere to Ada 2022 spec
    -- where I/O operations are not allowed in functions.
    -- TODO: Lookup source of this rule.
-   procedure Get_User_Input (UserInput : out Input_Command)
+   procedure Get_User_Input
+     (UserInput   : out Input_Command;
+      Input_Char  : out Character;
+      Extra_Input : out Boolean)
    with
      -- TODO: Assess the useability of this post condition. Remove if necessary
      Post =>

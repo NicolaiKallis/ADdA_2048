@@ -23,8 +23,29 @@ package body Logic.User is
       end case;
    end To_Direction;
 
+   function Should_Process_Input
+     (State : Game_State; User_Input : Input_Command) return Boolean
+   is
+   begin
+      case State.Status is
+         when Playing | Continuing =>
+            return True;
+
+         when Victory_Achieved =>
+            return User_Input in User_Cmd_Type;
+
+         when Game_Over =>
+            return User_Input = Cmd_Restart
+              or else User_Input = Cmd_Quit
+              or else User_Input = Cmd_Undo
+              or else User_Input = Cmd_Redo;
+      end case;
+   end Should_Process_Input;
+
    procedure Handle_User_Move
-     (State : in Out Game_State; User_Move : User_Move_Type)
+     (State         : in Out Game_State;
+      User_Move     : User_Move_Type;
+      Move_Executed : out Boolean)
    is
       Direction  : constant Direction_Type := To_Direction (User_Move);
       Move_Score : Score_Type;
@@ -32,6 +53,8 @@ package body Logic.User is
       Ignored    : Boolean;
    begin
       if Logic.Game.Is_Move_Possible (State.Board, Direction) then
+         Move_Executed := True;
+
          -- Save state before move for undo
          Logic.History.Save_Before_Move (State);
 
@@ -47,6 +70,8 @@ package body Logic.User is
          end if;
 
          Logic.Game.Update_Game_Status (State);
+      else
+         Move_Executed := False;
       end if;
    end Handle_User_Move;
 
@@ -120,18 +145,24 @@ package body Logic.User is
    end Handle_System_Cmd;
 
    function Handle_User_Input
-     (State : in Out Game_State; User_Input : Input_Command) return Boolean is
+     (State         : in Out Game_State;
+      User_Input    : Input_Command;
+      Move_Executed : out Boolean) return Boolean
+   is
    begin
       case User_Input is
          when User_Move_Type =>
-            Handle_User_Move (State, User_Input);
+            Handle_User_Move (State, User_Input, Move_Executed);
             return False;
 
          when User_Cmd_Type  =>
+            Move_Executed := True;  --  Commands are always "executed"
             return Handle_System_Cmd (State, User_Input);
 
          when Cmd_Invalid    =>
-            raise Invalid_Input_Error;
+            --  Invalid input: do nothing, don't quit, state unchanged
+            Move_Executed := True;  --  Not a failed move, just invalid input
+            return False;
       end case;
    end Handle_User_Input;
 

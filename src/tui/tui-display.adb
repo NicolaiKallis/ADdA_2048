@@ -4,6 +4,7 @@ with Ada.Text_IO;
 with Ada.Strings.Fixed;
 with Ada.Characters.Latin_1;
 with Types.Game_Types;
+with Logic.User; use Logic.User;
 with Logic.History;
 
 package body TUI.Display is
@@ -81,7 +82,7 @@ package body TUI.Display is
    procedure Show_Status_Message (Status : Game_Status) is
    begin
       case Status is
-         when Playing =>
+         when Playing          =>
             Ada.Text_IO.Put ("W/A/S/D: Move | R: Restart | Q: Quit");
             Show_Undo_Redo_Status;
             Ada.Text_IO.New_Line;
@@ -92,13 +93,13 @@ package body TUI.Display is
             Show_Undo_Redo_Status;
             Ada.Text_IO.New_Line;
 
-         when Continuing =>
+         when Continuing       =>
             Ada.Text_IO.Put_Line ("Keep going for a higher score!");
             Ada.Text_IO.Put ("W/A/S/D: Move | R: Restart | Q: Quit");
             Show_Undo_Redo_Status;
             Ada.Text_IO.New_Line;
 
-         when Game_Over =>
+         when Game_Over        =>
             Ada.Text_IO.Put_Line ("*** GAME OVER ***");
             Ada.Text_IO.Put_Line ("No more moves available!");
             Ada.Text_IO.Put ("R: Restart | Q: Quit");
@@ -120,5 +121,53 @@ package body TUI.Display is
       Ada.Text_IO.New_Line;
       Show_Status_Message (State.Status);
    end Show_Game;
+
+   procedure Show_Invalid_Input_Warning (Input_Char : Character) is
+   begin
+      Ada.Text_IO.Put ("Warning: '");
+      Ada.Text_IO.Put (Input_Char);
+      Ada.Text_IO.Put_Line ("' is not a valid command.");
+      Ada.Text_IO.Put_Line
+        ("Valid commands: W/A/S/D (move), U (undo), Y (redo), R (restart), Q (quit)");
+   end Show_Invalid_Input_Warning;
+
+   procedure Show_Extra_Input_Warning (Input_Char : Character) is
+   begin
+      Ada.Text_IO.Put ("Note: extra input ignored; using '");
+      Ada.Text_IO.Put (Input_Char);
+      Ada.Text_IO.Put_Line ("'.");
+   end Show_Extra_Input_Warning;
+
+   procedure Show_Input_Warnings
+     (User_Input    : Input_Command;
+      Input_Char    : Character;
+      Extra_Input   : Boolean;
+      Move_Executed : Boolean) is
+   begin
+      if User_Input = Cmd_Invalid and then Input_Char /= ' ' then
+         Show_Invalid_Input_Warning (Input_Char);
+      end if;
+
+      if Extra_Input then
+         Show_Extra_Input_Warning (Input_Char);
+      end if;
+
+      if User_Input in User_Move_Type and then not Move_Executed then
+         Show_Move_Not_Possible_Warning (To_Direction (User_Input));
+      end if;
+   end Show_Input_Warnings;
+
+   procedure Show_Move_Not_Possible_Warning (Direction : Direction_Type) is
+      Direction_Name : constant String :=
+        (case Direction is
+           when Up    => "up",
+           when Down  => "down",
+           when Left  => "left",
+           when Right => "right");
+   begin
+      Ada.Text_IO.Put ("Cannot move ");
+      Ada.Text_IO.Put (Direction_Name);
+      Ada.Text_IO.Put_Line (" - no tiles can shift in that direction.");
+   end Show_Move_Not_Possible_Warning;
 
 end TUI.Display;
