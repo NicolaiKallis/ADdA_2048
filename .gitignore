@@ -5,4 +5,5 @@
 .highscore
 .vscode/
 *.md
+!README.md
 /proof/
