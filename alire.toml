@@ -10,3 +10,6 @@ website = ""
 tags = ["ada", "2048", "game", "puzzle"]
 
 executables = ["adda_2048"]
+
+[[depends-on]]
+gnatprove = "^14.1.1"

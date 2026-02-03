@@ -12,8 +12,15 @@ project Adda_2048 is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("Ada") use 
-        Adda_2048_Config.Ada_Compiler_Switches & ("-gnatX"); 
+      --  TODO: Add stricter compiler switches when ready:
+      --    "-gnatwa"  (all warnings enabled)
+      --    "-gnatwe"  (warnings as errors)
+      --    "-gnata"   (assertions enabled)
+      --    "-gnatVa"  (all validity checks)
+      --    "-gnatyg"  (GNAT style checks)
+      --    "-gnatQ"   (don't quit on errors, find more)
+      for Default_Switches ("Ada") use
+        Adda_2048_Config.Ada_Compiler_Switches & ("-gnatX");
    end Compiler;
 
    package Binder is
@@ -21,8 +28,32 @@ project Adda_2048 is
    end Binder;
 
    package Prove is
-      for Default_Switches ("Ada") use ("--mode=check");
+      for Proof_Dir use "proof";
+      --  TODO: Increase rigor when ready:
+      --    "--level=4"          (maximum rigor, currently 2)
+      --    "--warnings=error"   (treat warnings as errors)
+      --    "--checks-as-errors" (failed checks = failure)
+      for Switches use ("--mode=prove",
+                        "--level=2",
+                        "--prover=all",
+                        "--timeout=60");
    end Prove;
+
+   --  TODO: Add Check package for coding standard enforcement
+   --  package Check is
+   --     for Default_Switches ("Ada") use ("-rules", "-from=gnatcheck.rules");
+   --  end Check;
+
+   --  TODO: Add Pretty_Printer package for consistent formatting
+   --  package Pretty_Printer is
+   --     for Default_Switches ("Ada") use
+   --       ("-i3", "-M120", "--no-separate-is");
+   --  end Pretty_Printer;
+
+   --  TODO: Add Documentation package and create docs/ directory
+   --  package Documentation is
+   --     for Documentation_Dir use "docs";
+   --  end Documentation;
 
    package Install is
       for Artifacts (".") use ("share");
