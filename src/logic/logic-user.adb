@@ -52,13 +52,15 @@ package body Logic.User is
 
    procedure Handle_Undo (State : in Out Game_State) is
       Snapshot : Logic.History.State_Snapshot;
+      Success  : Boolean;
    begin
       Snapshot.Board := State.Board;
       Snapshot.Score := State.Score;
       Snapshot.Move_Count := State.Move_Count;
 
       -- Try to undo
-      if Logic.History.Undo (Snapshot) then
+      Logic.History.Undo (Snapshot, Success);
+      if Success then
          State.Board := Snapshot.Board;
          State.Score := Snapshot.Score;
          State.Move_Count := Snapshot.Move_Count;
@@ -71,6 +73,7 @@ package body Logic.User is
 
    procedure Handle_Redo (State : in Out Game_State) is
       Snapshot : Logic.History.State_Snapshot;
+      Success  : Boolean;
    begin
       -- Create snapshot of current state
       Snapshot.Board := State.Board;
@@ -78,7 +81,8 @@ package body Logic.User is
       Snapshot.Move_Count := State.Move_Count;
 
       -- Try to redo
-      if Logic.History.Redo (Snapshot) then
+      Logic.History.Redo (Snapshot, Success);
+      if Success then
          State.Board := Snapshot.Board;
          State.Score := Snapshot.Score;
          State.Move_Count := Snapshot.Move_Count;
