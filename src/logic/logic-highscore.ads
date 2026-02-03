@@ -1,3 +1,5 @@
+pragma SPARK_Mode (Off);
+
 with Types.Game_Types; use Types.Game_Types;
 
 package Logic.Highscore is

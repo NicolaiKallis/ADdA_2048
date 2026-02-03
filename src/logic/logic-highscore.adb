@@ -1,3 +1,5 @@
+pragma SPARK_Mode (Off);
+
 with Ada.Text_IO;
 with Ada.Directories;
 with Ada.Environment_Variables;
