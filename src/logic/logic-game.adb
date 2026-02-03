@@ -1,6 +1,9 @@
+pragma SPARK_Mode (On);
+
 with Logic.Random;
 with Logic.Highscore;
 with Types.Game_Types; use Types.Game_Types;
+with Verification.Game_Ghost;
 
 package body Logic.Game is
 
@@ -25,6 +28,10 @@ package body Logic.Game is
    is
       Seen : Natural := 0;
    begin
+      --  Initialize outputs for SPARK flow analysis
+      Row := Board_Index'First;
+      Column := Board_Index'First;
+
       for R in Board_Index loop
          for C in Board_Index loop
             if Is_Cell_Empty (Board (R, C)) then
@@ -32,6 +39,7 @@ package body Logic.Game is
                if Seen = N then
                   Row := R;
                   Column := C;
+                  pragma Assert (Is_Cell_Empty (Board (Row, Column)));
                   return;
                end if;
             end if;
@@ -44,7 +52,9 @@ package body Logic.Game is
       return Count_Empty_Cells (Board) = 0;
    end Is_Board_Full;
 
-   procedure Initialize_New_Game (State : out Game_State) is
+   procedure Initialize_New_Game (State : out Game_State)
+   with SPARK_Mode => Off
+   is
    begin
       Initialize_Board (State.Board);
       State.Status := Playing;
@@ -53,7 +63,8 @@ package body Logic.Game is
       State.Move_Count := 0;
    end Initialize_New_Game;
 
-   procedure Initialize_Board (Board : out Board_Type) is
+   procedure Initialize_Board (Board : out Board_Type) with SPARK_Mode => Off
+   is
       Ignored : Boolean;
    begin
       Board := (others => (others => Empty_Cell));
@@ -65,6 +76,7 @@ package body Logic.Game is
      (Board     : in out Board_Type;
       Direction : Direction_Type;
       Score     : out Score_Type) return Boolean
+   with SPARK_Mode => Off
    is
       Tile_Added : Boolean;
    begin
@@ -82,56 +94,95 @@ package body Logic.Game is
       Last_Merged    : Board_Index := Board_Index'First;
       Any_Merge_Done : Boolean := False;
       Merged_Value   : Cell_Value;
+
+      Initial_Sum : constant Natural :=
+        Verification.Game_Ghost.Slice_Sum (Line)
+      with Ghost;
    begin
       Score := 0;
       for Read_Index in Board_Index loop
+         --  Write_Index never exceeds Read_Index + 1
+         pragma
+           Loop_Invariant (Write_Index in Board_Index'First .. Read_Index + 1);
+
+         --  Cells between Write_Index and Read_Index-1 are empty (compaction)
+         pragma
+           Loop_Invariant
+             (for all I in Write_Index .. Read_Index - 1 =>
+                (if I in Board_Index then Line (I) = Empty_Cell));
+
          declare
             Read_Index_Cell_Value : constant Cell_Value := Line (Read_Index);
          begin
             if not Is_Cell_Empty (Read_Index_Cell_Value) then
-               -- Try to merge with the tile we just wrote
+               --  Try to merge with the tile we just wrote
                if Write_Index > Board_Index'First
                  and then Line (Write_Index - 1) = Read_Index_Cell_Value
                  and then
                    (not Any_Merge_Done or else Last_Merged /= Write_Index - 1)
                then
-                  -- Merge with previous tile
-                  Merged_Value := 2 * Read_Index_Cell_Value;
-                  Line (Write_Index - 1) := Merged_Value;
-                  Line (Read_Index) := Empty_Cell;
-                  Last_Merged := Write_Index - 1;
-                  Any_Merge_Done := True;
-                  Score := Score + Score_Type (Merged_Value);
+                  --  Merge with previous tile
+                  if Read_Index_Cell_Value <= Max_Valid_Cell_Value / 2 then
+                     Merged_Value := 2 * Read_Index_Cell_Value;
+                     Line (Write_Index - 1) := Merged_Value;
+                     Line (Read_Index) := Empty_Cell;
+                     Last_Merged := Write_Index - 1;
+                     Any_Merge_Done := True;
+                     if Score <= Score_Type'Last - Score_Type (Merged_Value)
+                     then
+                        Score := Score + Score_Type (Merged_Value);
+                     else
+                        Score := Score_Type'Last;
+                     end if;
+                  else
+                     --  Defensive: avoid overflow if merge would exceed max.
+                     if Read_Index /= Write_Index then
+                        if Write_Index in Board_Index then
+                           Line (Write_Index) := Read_Index_Cell_Value;
+                        end if;
+                        Line (Read_Index) := Empty_Cell;
+                     end if;
+                     if Write_Index < Board_Index'Last + 1 then
+                        Write_Index := Write_Index + 1;
+                     end if;
+                  end if;
                else
-                  -- Move tile to write position
+                  --  Move tile to write position
                   if Read_Index /= Write_Index then
-                     Line (Write_Index) := Read_Index_Cell_Value;
+                     if Write_Index in Board_Index then
+                        Line (Write_Index) := Read_Index_Cell_Value;
+                     end if;
                      Line (Read_Index) := Empty_Cell;
                   end if;
-                  Write_Index := Write_Index + 1;
+                  if Write_Index < Board_Index'Last + 1 then
+                     Write_Index := Write_Index + 1;
+                  end if;
                end if;
             end if;
          end;
       end loop;
    end Slide_And_Merge;
 
-   -- Wrapper that handles direction by reversing the slice
+   --  Reverses a slice in place (extracted for SPARK verification)
+   procedure Reverse_Slice (S : in out Slice_Type) is
+      Temp       : Cell_Value;
+      Mirror_Idx : Board_Index;
+   begin
+      for Idx in Board_Index'First .. Board_Index'First + (Board_Size - 1) / 2
+      loop
+         Mirror_Idx := Board_Index'Last - (Idx - Board_Index'First);
+
+         Temp := S (Idx);
+         S (Idx) := S (Mirror_Idx);
+         S (Mirror_Idx) := Temp;
+      end loop;
+   end Reverse_Slice;
+
+   --  Wrapper handling oppositde direction by reversing existing slice
    procedure Process_Slice
      (Slice                   : in out Slice_Type;
       Iterate_Ascending_Index : Boolean;
-      Score                   : out Score_Type)
-   is
-      procedure Reverse_Slice (S : in out Slice_Type) is
-         Temp : Cell_Value;
-      begin
-         for Idx in
-           Board_Index'First .. Board_Index'First + (Board_Size - 1) / 2
-         loop
-            Temp := S (Idx);
-            S (Idx) := S (Board_Index'Last - (Idx - Board_Index'First));
-            S (Board_Index'Last - (Idx - Board_Index'First)) := Temp;
-         end loop;
-      end Reverse_Slice;
+      Score                   : out Score_Type) is
    begin
       if Iterate_Ascending_Index then
          Slide_And_Merge (Slice, Score);
@@ -206,9 +257,7 @@ package body Logic.Game is
       return False;
    end Is_Move_Possible;
 
-   --  Generic move: for any Board_Size, process rows or columns depending on
-   --  Direction. Each line is processed with Process_Slice; tiles stop at
-   --  Reached_Board_End, Merged_With_Tile, or Blocked_By_Tile (see Tile_Stop_Reason).
+   -- Tiles stop at Reached_Board_End, Merged_With_Tile, or Blocked_By_Tile (see Tile_Stop_Reason)
    procedure Move_Tiles
      (Board     : in out Board_Type;
       Direction : Direction_Type;
@@ -226,7 +275,11 @@ package body Logic.Game is
                end loop;
                Process_Slice
                  (Line, Iterate_Ascending_Index => True, Score => Line_Score);
-               Score := Score + Line_Score;
+               if Score <= Score_Type'Last - Line_Score then
+                  Score := Score + Line_Score;
+               else
+                  Score := Score_Type'Last;
+               end if;
                for R in Board_Index loop
                   Board (R, C) := Line (R);
                end loop;
@@ -239,7 +292,11 @@ package body Logic.Game is
                end loop;
                Process_Slice
                  (Line, Iterate_Ascending_Index => False, Score => Line_Score);
-               Score := Score + Line_Score;
+               if Score <= Score_Type'Last - Line_Score then
+                  Score := Score + Line_Score;
+               else
+                  Score := Score_Type'Last;
+               end if;
                for R in Board_Index loop
                   Board (R, C) := Line (R);
                end loop;
@@ -252,7 +309,11 @@ package body Logic.Game is
                end loop;
                Process_Slice
                  (Line, Iterate_Ascending_Index => True, Score => Line_Score);
-               Score := Score + Line_Score;
+               if Score <= Score_Type'Last - Line_Score then
+                  Score := Score + Line_Score;
+               else
+                  Score := Score_Type'Last;
+               end if;
                for C in Board_Index loop
                   Board (R, C) := Line (C);
                end loop;
@@ -265,7 +326,11 @@ package body Logic.Game is
                end loop;
                Process_Slice
                  (Line, Iterate_Ascending_Index => False, Score => Line_Score);
-               Score := Score + Line_Score;
+               if Score <= Score_Type'Last - Line_Score then
+                  Score := Score + Line_Score;
+               else
+                  Score := Score_Type'Last;
+               end if;
                for C in Board_Index loop
                   Board (R, C) := Line (C);
                end loop;
@@ -273,7 +338,9 @@ package body Logic.Game is
       end case;
    end Move_Tiles;
 
-   function Add_Random_Tile (Board : in out Board_Type) return Boolean is
+   function Add_Random_Tile (Board : in out Board_Type) return Boolean
+   with SPARK_Mode => Off
+   is
       C   : constant Natural := Count_Empty_Cells (Board);
       N   : Positive;
       Row : Board_Index;

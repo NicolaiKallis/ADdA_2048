@@ -25,6 +25,9 @@ package Types.Game_Types is
    type Board_Type is array (Board_Index, Board_Index) of Cell_Value;
    type Tile_Count_Type is range 0 .. Board_Size * Board_Size;
 
+   --  A slice of the Board is either a row or a column.
+   type Slice_Type is array (Board_Index) of Cell_Value;
+
    type Score_Type is range 0 .. 10_000_000;
    type Move_Count_Type is range 0 .. 1_000_000;
 
