@@ -1,6 +1,8 @@
 pragma SPARK_Mode (On);
 
-package Types.Game_Types is
+package Types.Game_Types
+  with Pure
+is
 
    -- MARK: Cell Specifications
    -- Base type so constants can be defined before the constrained Cell_Value subtype.
