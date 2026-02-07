@@ -2,7 +2,6 @@ pragma SPARK_Mode (Off);
 
 with Ada.Text_IO;
 with Ada.Directories;
-with Ada.Environment_Variables;
 
 package body Logic.Highscore is
 
@@ -11,9 +10,11 @@ package body Logic.Highscore is
       Search_Dir  : String := Current_Dir;
    begin
       loop
-         -- TODO: Fix this ; instead of searching for .gitignore it should search
-         -- more broadly for the level of hierarchy
-         if Ada.Directories.Exists (Search_Dir & "/.gitignore") then
+         -- NOTE: These files need to be present to run an Ada program using alire
+         -- so they are good candidates to retrieve the root directory in all cases
+         if Ada.Directories.Exists (Search_Dir & "/alire.toml")
+           or else Ada.Directories.Exists (Search_Dir & "/adda_2048.gpr")
+         then
             return Search_Dir & "/" & Default_Highscore_File;
          end if;
 
@@ -27,7 +28,7 @@ package body Logic.Highscore is
          end;
       end loop;
 
-      -- Fallback
+      -- Fallbacks are good pratice anyway :-)
       return Current_Dir & "/" & Default_Highscore_File;
    end Get_Highscore_Path;
 
