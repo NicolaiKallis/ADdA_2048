@@ -22,6 +22,32 @@ Run:
 alr run
 ```
 
+# 🐳 Docker
+
+Build the image:
+
+```sh
+docker build -t adda_2048 .
+```
+
+To pin a different Alire release:
+
+```sh
+docker build -t adda_2048 --build-arg ALIRE_VERSION=2.1.0 .
+```
+
+Run the game:
+
+```sh
+docker run --rm -it adda_2048
+```
+
+Run GNATprove:
+
+```sh
+docker run --rm -it adda_2048 alr exec -- gnatprove -P adda_2048.gpr --mode=prove --level=1
+```
+
 ## 🎮 Controls:
 - `W/A/S/D` = move
 - `U` = undo

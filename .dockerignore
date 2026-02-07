@@ -1,0 +1,13 @@
+.git
+.alire
+alire
+bin
+obj
+proof
+.highscore
+*.o
+*.ali
+*.adm
+*.adp
+*.orig
+*.tmp
