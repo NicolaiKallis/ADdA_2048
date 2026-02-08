@@ -11,11 +11,11 @@ package body Verification.Game_Ghost is
    function Slice_Sum (S : Slice_Type) return Natural is
       Sum : Natural := 0;
    begin
-      for I in Board_Index loop
+      for I in S'Range loop
          pragma
            Loop_Invariant
              (Sum
-              <= Natural (I - Board_Index'First)
+              <= Natural (I - S'First)
                  * Natural (Max_Valid_Cell_Value));
          Sum := Sum + Natural (S (I));
       end loop;
@@ -25,8 +25,8 @@ package body Verification.Game_Ghost is
    function Non_Empty_Count (S : Slice_Type) return Natural is
       Count : Natural := 0;
    begin
-      for I in Board_Index loop
-         pragma Loop_Invariant (Count <= Natural (I - Board_Index'First));
+      for I in S'Range loop
+         pragma Loop_Invariant (Count <= Natural (I - S'First));
          if S (I) /= Empty_Cell then
             Count := Count + 1;
          end if;
@@ -37,7 +37,7 @@ package body Verification.Game_Ghost is
    function Is_Compacted (S : Slice_Type) return Boolean is
       Found_Empty : Boolean := False;
    begin
-      for I in Board_Index loop
+      for I in S'Range loop
          if S (I) = Empty_Cell then
             Found_Empty := True;
          elsif Found_Empty then
@@ -49,6 +49,6 @@ package body Verification.Game_Ghost is
    end Is_Compacted;
 
    function All_Valid_Cells (S : Slice_Type) return Boolean
-   is (for all I in Board_Index => Is_Valid_Cell_Value (S (I)));
+   is (for all I in S'Range => Is_Valid_Cell_Value (S (I)));
 
 end Verification.Game_Ghost;
