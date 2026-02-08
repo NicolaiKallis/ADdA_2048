@@ -18,11 +18,14 @@ RUN mkdir -p /opt/alire \
         https://github.com/alire-project/alire/releases/download/v${ALIRE_VERSION}/alr-${ALIRE_VERSION}-bin-x86_64-linux.zip \
     && unzip /tmp/alr.zip -d /opt/alire \
     && rm /tmp/alr.zip \
-    && ALR_BIN=\"$(find /opt/alire -type f -name alr -perm -111 | head -n 1)\" \
-    && ln -s \"${ALR_BIN}\" /usr/local/bin/alr
+    && find /opt/alire -type f -name "alr*" -ls \
+    && ALR_BIN=$(find /opt/alire -type f -name alr ! -name "*.md" | head -n 1) \
+    && chmod +x "$ALR_BIN" \
+    && ln -sf "$ALR_BIN" /usr/local/bin/alr \
+    && alr --version
 
 WORKDIR /workspace
 COPY . /workspace
 
-# Default: build and run the game. Override with `docker run ... alr build` or `alr exec -- gnatprove ...`.
-CMD ["alr", "run"]
+# Default: build and run the game. Override with `docker run ... /usr/local/bin/alr build` or `... alr exec ...`.
+CMD ["/usr/local/bin/alr", "run"]
