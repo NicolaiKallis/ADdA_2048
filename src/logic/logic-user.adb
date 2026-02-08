@@ -69,7 +69,8 @@ package body Logic.User is
          -- Update high score (both in-memory and persisted)
          if State.Score > State.High_Score then
             State.High_Score := State.Score;
-            Ignored := Logic.Highscore.Update_Highscore (State.Score);
+            Ignored :=
+              Logic.Highscore.Update_Highscore (State.Score, State.Size);
          end if;
 
          Logic.Game.Update_Game_Status (State);

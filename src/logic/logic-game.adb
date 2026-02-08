@@ -64,7 +64,7 @@ package body Logic.Game is
       Initialize_Board (State.Board, Size);
       State.Status := Playing;
       State.Score := 0;
-      State.High_Score := Logic.Highscore.Load_Highscore;
+      State.High_Score := Logic.Highscore.Load_Highscore (Size);
       State.Move_Count := 0;
    end Initialize_New_Game;
 
