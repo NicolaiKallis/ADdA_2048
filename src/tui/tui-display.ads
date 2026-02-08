@@ -1,6 +1,3 @@
--- TUI Display package for 2048 game
--- Provides ASCII-based rendering of the game board and statistics
-
 with Types.Game_Types;
 with Logic.User;
 

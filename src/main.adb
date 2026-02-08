@@ -22,7 +22,7 @@ begin
       when Menu_Start_Game =>
          null;
 
-      when Menu_Quit =>
+      when Menu_Quit       =>
          return;
    end case;
 

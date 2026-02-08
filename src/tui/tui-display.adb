@@ -1,5 +1,3 @@
--- TUI Display implementation for 2048 game
-
 with Ada.Text_IO;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;

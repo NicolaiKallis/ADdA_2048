@@ -14,6 +14,7 @@ package TUI.Input is
    --           SPARK Proof Manual 3.3.1 (functions have no explicit side effects)
    --           (https://docs.adacore.com/sparkdocs-docs/Proof_Manual.htm)
 
+   -- Read and parse a single user command from standard input
    procedure Get_User_Input
      (UserInput   : out Input_Command;
       Input_Char  : out Character;

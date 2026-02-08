@@ -8,6 +8,7 @@ package Logic.History
        Initializes    => (Undo_State, Redo_State)
 is
 
+   -- Maximum snapshots retained in undo/redo history.
    Max_History_Size : constant := 10;
 
    --  Snapshot of game state for undo/redo
@@ -32,11 +33,13 @@ is
    --  See Verification.Game_Ghost for movable ghost functions.
    ---------------------------------------------------------------------------
 
+   -- Return current undo stack depth.
    function Undo_Stack_Size return Natural
      with Ghost,
           Global => Undo_State,
           Post   => Undo_Stack_Size'Result <= Max_History_Size;
 
+   -- Return current redo stack depth.
    function Redo_Stack_Size return Natural
      with Ghost,
           Global => Redo_State,
@@ -47,6 +50,7 @@ is
      with Global => (Output => (Undo_State, Redo_State)),
           Post   => True;
 
+   -- Save current game snapshot to undo history and clear redo history.
    procedure Save_Before_Move (State : Game_State)
      with Global => (In_Out => Undo_State, Output => Redo_State),
           Pre    => Is_Valid_Board (State.Board),
@@ -68,10 +72,12 @@ is
           Pre    => Is_Valid_Board (Current_Snapshot.Board),
           Post   => True;
 
+   -- Return whether an undo operation is currently available.
    function Can_Undo return Boolean
      with Global => Undo_State,
           Post   => True;
 
+   -- Return whether a redo operation is currently available.
    function Can_Redo return Boolean
      with Global => Redo_State,
           Post   => True;

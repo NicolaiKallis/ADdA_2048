@@ -7,17 +7,18 @@ with Types.Game_Types;
 package body TUI.Menu is
 
    Min_Board_Size     : constant Positive := Types.Game_Types.Min_Board_Size;
-   Default_Board_Size : constant Positive := Types.Game_Types.Default_Board_Size;
+   Default_Board_Size : constant Positive :=
+     Types.Game_Types.Default_Board_Size;
    Max_Board_Size     : constant Positive := Types.Game_Types.Max_Board_Size;
    Default_Size_Text  : constant String :=
-     Ada.Strings.Fixed.Trim (Positive'Image (Default_Board_Size),
-                             Ada.Strings.Left);
+     Ada.Strings.Fixed.Trim
+       (Positive'Image (Default_Board_Size), Ada.Strings.Left);
    Max_Size_Text      : constant String :=
-     Ada.Strings.Fixed.Trim (Positive'Image (Max_Board_Size),
-                             Ada.Strings.Left);
+     Ada.Strings.Fixed.Trim
+       (Positive'Image (Max_Board_Size), Ada.Strings.Left);
    Min_Size_Text      : constant String :=
-     Ada.Strings.Fixed.Trim (Positive'Image (Min_Board_Size),
-                             Ada.Strings.Left);
+     Ada.Strings.Fixed.Trim
+       (Positive'Image (Min_Board_Size), Ada.Strings.Left);
 
    procedure Show_Start_Menu is
    begin
@@ -53,7 +54,8 @@ package body TUI.Menu is
       Ada.Text_IO.Put_Line ("R       : Restart");
       Ada.Text_IO.Put_Line ("C       : Continue after victory");
       Ada.Text_IO.Put_Line ("Q       : Quit");
-      Ada.Text_IO.Put_Line ("Note: only the first character on a line is used.");
+      Ada.Text_IO.Put_Line
+        ("Note: only the first character on a line is used.");
       Ada.Text_IO.New_Line;
       Ada.Text_IO.Put ("Press Enter to return to menu...");
    end Show_Help;
@@ -87,7 +89,7 @@ package body TUI.Menu is
          end if;
 
          declare
-            Raw : constant String := Input_Line (1 .. Input_Len);
+            Raw     : constant String := Input_Line (1 .. Input_Len);
             Cleaned : constant String :=
               Ada.Strings.Fixed.Trim (Raw, Ada.Strings.Both);
          begin
@@ -99,20 +101,17 @@ package body TUI.Menu is
                Parsed := Positive'Value (Cleaned);
                if Parsed < Min_Board_Size then
                   Ada.Text_IO.Put_Line
-                    ("Minimum board size is "
-                     & Min_Size_Text
-                     & ".");
+                    ("Minimum board size is " & Min_Size_Text & ".");
                elsif Parsed > Max_Board_Size then
                   Ada.Text_IO.Put_Line
-                    ("Maximum board size is "
-                     & Max_Size_Text
-                     & ".");
+                    ("Maximum board size is " & Max_Size_Text & ".");
                else
                   return Types.Game_Types.Board_Size_Type (Parsed);
                end if;
             exception
                when others =>
-                  Ada.Text_IO.Put_Line ("Please enter a valid positive number.");
+                  Ada.Text_IO.Put_Line
+                    ("Please enter a valid positive number.");
             end;
          end;
       end loop;
@@ -123,7 +122,7 @@ package body TUI.Menu is
       Input_Len  : Natural;
       Choice     : Character := ' ';
       Result     : Menu_Selection :=
-        (Action => Menu_Quit,
+        (Action     => Menu_Quit,
          Board_Size => Types.Game_Types.Default_Board_Size);
    begin
       loop
@@ -136,20 +135,20 @@ package body TUI.Menu is
          end if;
 
          case Choice is
-            when '1' =>
+            when '1'    =>
                Result.Action := Menu_Start_Game;
                Result.Board_Size := Prompt_Board_Size;
                return Result;
 
-            when '2' =>
+            when '2'    =>
                Show_Rules;
                Wait_For_Enter;
 
-            when '3' =>
+            when '3'    =>
                Show_Help;
                Wait_For_Enter;
 
-            when 'Q' =>
+            when 'Q'    =>
                Result.Action := Menu_Quit;
                return Result;
 

@@ -6,18 +6,21 @@ with Verification.Game_Ghost;
 
 package Logic.Game is
 
+   -- Count empty cells in the active board area.
    function Count_Empty_Cells
      (Board : Board_Type; Size : Board_Size_Type) return Natural
    with
      Pre  => Is_Valid_Board (Board),
      Post => Count_Empty_Cells'Result in 0 .. Size * Size;
 
+   -- Return True when no empty cells remain.
    function Is_Board_Full
      (Board : Board_Type; Size : Board_Size_Type) return Boolean
    with
      Pre  => Is_Valid_Board (Board),
      Post => Is_Board_Full'Result = (Count_Empty_Cells (Board, Size) = 0);
 
+   -- Initialize complete runtime game state for a new session.
    procedure Initialize_New_Game
      (State : out Game_State; Size : Board_Size_Type)
    with
@@ -28,6 +31,7 @@ package Logic.Game is
        and then State.Score = 0
        and then Is_Valid_Board (State.Board);
 
+   -- Initialize board cells and spawn the starting tiles.
    procedure Initialize_Board
      (Board : out Board_Type; Size : Board_Size_Type)
    with
@@ -40,10 +44,12 @@ package Logic.Game is
                  and then (Board (R, C) = 2 or Board (R, C) = 4)))))
        and then Is_Valid_Board (Board);
 
+   -- Add one random tile if at least one empty cell exists.
    function Add_Random_Tile
      (Board : in out Board_Type; Size : Board_Size_Type) return Boolean
    with SPARK_Mode => Off;
 
+   -- Apply one move and, when valid, spawn a new random tile.
    function Process_Move
      (Board     : in out Board_Type;
       Size      : Board_Size_Type;
@@ -51,6 +57,7 @@ package Logic.Game is
       Score     : out Score_Type) return Boolean
    with SPARK_Mode => Off;
 
+   -- Move and merge all tiles for one direction and return gained score.
    procedure Move_Tiles
      (Board     : in out Board_Type;
       Size      : Board_Size_Type;
@@ -62,15 +69,18 @@ package Logic.Game is
        and then Is_Move_Possible (Board, Size, Direction),
      Post => True;
 
+   -- Check whether a direction would change board state.
    function Is_Move_Possible
      (Board : Board_Type; Size : Board_Size_Type; Direction : Direction_Type)
       return Boolean
    with Pre => Is_Valid_Board (Board);
 
+   -- Return True when at least one move is still possible.
    function Is_Any_Move_Possible
      (Board : Board_Type; Size : Board_Size_Type) return Boolean
    with Pre => Is_Valid_Board (Board);
 
+   -- Return True when any cell reached the victory tile threshold.
    function Has_Victory_Tile
      (Board : Board_Type; Size : Board_Size_Type) return Boolean
    with
@@ -85,6 +95,7 @@ package Logic.Game is
                    (C <= Board_Index (Size)
                     and then Board (R, C) >= Victory_Tile_Value)))));
 
+   -- Update game status after a move without mutating board or scores.
    -- Call this after each move to detect victory or game over
    procedure Update_Game_Status (State : in out Game_State)
    with
@@ -98,6 +109,7 @@ package Logic.Game is
 
 private
 
+   -- Map the N-th empty cell rank to concrete board coordinates.
    procedure Get_Empty_Cell
      (Board  : Board_Type;
       Size   : Board_Size_Type;
@@ -113,6 +125,7 @@ private
       and then Row <= Board_Index (Size)
       and then Column <= Board_Index (Size);
 
+   -- Reverse one row/column slice in place.
    --  Helper method to reverse a slice in place
    procedure Reverse_Slice
      (S : in out Slice_Type; Size : Board_Size_Type)
@@ -162,15 +175,17 @@ private
    --  Step 4: Read=4 (4), Write=2 -> place at 2, Write=3  [4, 4, 0, 0]
    --  Result: [4, 4, 0, 0]
    ---------------------------------------------------------------------------
+   -- Slide a slice to the front and merge equal adjacent tiles once.
    procedure Slide_And_Merge
      (Line : in out Slice_Type; Size : Board_Size_Type; Score : out Score_Type)
    with Pre => True, Post => True;
 
+   -- Process a slice in either direction by optional reversal plus slide.
    procedure Process_Slice
      (Slice                   : in out Slice_Type;
       Size                    : Board_Size_Type;
       Iterate_Ascending_Index : Boolean;
       Score                   : out Score_Type)
-   with Pre => Verification.Game_Ghost.All_Valid_Cells (Slice), Post => True;
+   with Pre => True, Post => True;
 
 end Logic.Game;
