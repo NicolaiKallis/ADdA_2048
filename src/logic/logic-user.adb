@@ -24,18 +24,18 @@ package body Logic.User is
    end To_Direction;
 
    function Should_Process_Input
-     (State : Game_State; User_Input : Input_Command) return Boolean
-   is
+     (State : Game_State; User_Input : Input_Command) return Boolean is
    begin
       case State.Status is
          when Playing | Continuing =>
             return True;
 
-         when Victory_Achieved =>
+         when Victory_Achieved     =>
             return User_Input in User_Cmd_Type;
 
-         when Game_Over =>
-            return User_Input = Cmd_Restart
+         when Game_Over            =>
+            return
+              User_Input = Cmd_Restart
               or else User_Input = Cmd_Quit
               or else User_Input = Cmd_Undo
               or else User_Input = Cmd_Redo;
@@ -43,7 +43,7 @@ package body Logic.User is
    end Should_Process_Input;
 
    procedure Handle_User_Move
-     (State         : in Out Game_State;
+     (State         : in out Game_State;
       User_Move     : User_Move_Type;
       Move_Executed : out Boolean)
    is
@@ -59,18 +59,22 @@ package body Logic.User is
          Logic.History.Save_Before_Move (State);
 
          Success :=
-           Logic.Game.Process_Move (State.Board,
-                                    State.Size,
-                                    Direction,
-                                    Move_Score);
+           Logic.Game.Process_Move
+             (State.Board, State.Size, Direction, Move_Score);
          State.Move_Count := State.Move_Count + 1;
          State.Score := State.Score + Move_Score;
 
          -- Update high score (both in-memory and persisted)
          if State.Score > State.High_Score then
             State.High_Score := State.Score;
-            Ignored :=
-              Logic.Highscore.Update_Highscore (State.Score, State.Size);
+            begin
+               Ignored :=
+                 Logic.Highscore.Update_Highscore (State.Score, State.Size);
+            exception
+               when Logic.Highscore.Project_Root_Not_Found =>
+                  --  Keep runtime high score updated even if persistence fails.
+                  Ignored := False;
+            end;
          end if;
 
          Logic.Game.Update_Game_Status (State);
@@ -79,7 +83,7 @@ package body Logic.User is
       end if;
    end Handle_User_Move;
 
-   procedure Handle_Undo (State : in Out Game_State) is
+   procedure Handle_Undo (State : in out Game_State) is
       Snapshot : Logic.History.State_Snapshot;
       Success  : Boolean;
    begin
@@ -100,7 +104,7 @@ package body Logic.User is
       end if;
    end Handle_Undo;
 
-   procedure Handle_Redo (State : in Out Game_State) is
+   procedure Handle_Redo (State : in out Game_State) is
       Snapshot : Logic.History.State_Snapshot;
       Success  : Boolean;
    begin
@@ -121,7 +125,7 @@ package body Logic.User is
    end Handle_Redo;
 
    function Handle_System_Cmd
-     (State : in Out Game_State; Cmd : User_Cmd_Type) return Boolean is
+     (State : in out Game_State; Cmd : User_Cmd_Type) return Boolean is
    begin
       case Cmd is
          when Cmd_Undo     =>
@@ -149,10 +153,9 @@ package body Logic.User is
    end Handle_System_Cmd;
 
    function Handle_User_Input
-     (State         : in Out Game_State;
+     (State         : in out Game_State;
       User_Input    : Input_Command;
-      Move_Executed : out Boolean) return Boolean
-   is
+      Move_Executed : out Boolean) return Boolean is
    begin
       case User_Input is
          when User_Move_Type =>

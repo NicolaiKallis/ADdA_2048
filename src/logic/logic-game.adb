@@ -8,17 +8,26 @@ with Verification.Game_Ghost;
 package body Logic.Game is
 
    function Count_Empty_Cells
-     (Board : Board_Type; Size : Board_Size_Type) return Natural is
-      Count : Natural := 0;
+     (Board : Board_Type; Size : Board_Size_Type) return Natural
+   is
+      Count : Tile_Count_Type := 0;
    begin
       for R in Board_Index range 1 .. Board_Index (Size) loop
+         pragma
+           Loop_Invariant
+             (Count <= Tile_Count_Type (Natural (R - 1) * Natural (Size)));
          for C in Board_Index range 1 .. Board_Index (Size) loop
+            pragma
+              Loop_Invariant
+                (Count
+                 <= Tile_Count_Type
+                      (Natural (R - 1) * Natural (Size) + Natural (C - 1)));
             if Is_Cell_Empty (Board (R, C)) then
                Count := Count + 1;
             end if;
          end loop;
       end loop;
-      return Count;
+      return Natural (Count);
    end Count_Empty_Cells;
 
    procedure Get_Empty_Cell
@@ -64,12 +73,19 @@ package body Logic.Game is
       Initialize_Board (State.Board, Size);
       State.Status := Playing;
       State.Score := 0;
-      State.High_Score := Logic.Highscore.Load_Highscore (Size);
+      begin
+         State.High_Score := Logic.Highscore.Load_Highscore (Size);
+      exception
+         when Logic.Highscore.Project_Root_Not_Found =>
+            --  Highscore file path cannot be resolved (e.g. no project root).
+            --  Start game anyway with in-memory high score fallback.
+            State.High_Score := 0;
+      end;
       State.Move_Count := 0;
    end Initialize_New_Game;
 
-   procedure Initialize_Board
-     (Board : out Board_Type; Size : Board_Size_Type) with SPARK_Mode => Off
+   procedure Initialize_Board (Board : out Board_Type; Size : Board_Size_Type)
+   with SPARK_Mode => Off
    is
       Ignored : Boolean;
    begin
@@ -99,12 +115,13 @@ package body Logic.Game is
       subtype Index_Type is Board_Index;
       subtype Write_Index_Type is
         Index_Type'Base range Line'First .. Line'Last + 1;
-      Start_Index   : constant Index_Type := Line'First;
-      End_Index     : constant Index_Type := Board_Index (Size);
-      Write_Index    : Write_Index_Type := Start_Index;
-      Last_Merged    : Index_Type := Start_Index;
-      Any_Merge_Done : Boolean := False;
-      Merged_Value   : Cell_Value;
+      Start_Index       : constant Index_Type := Line'First;
+      End_Index         : constant Index_Type := Board_Index (Size);
+      Write_Index       : Write_Index_Type := Start_Index;
+      Last_Merged       : Index_Type := Start_Index;
+      Any_Merge_Done    : Boolean := False;
+      Merged_Value      : Cell_Value;
+      Max_Scorable_Cell : constant Cell_Value := Cell_Value (Score_Type'Last);
 
       Initial_Sum : constant Natural :=
         Verification.Game_Ghost.Slice_Sum (Line)
@@ -113,15 +130,13 @@ package body Logic.Game is
       Score := 0;
       for Read_Index in Start_Index .. End_Index loop
          --  Write_Index never exceeds Read_Index + 1
-         pragma
-           Loop_Invariant (Write_Index in Start_Index .. Read_Index + 1);
+         pragma Loop_Invariant (Write_Index in Start_Index .. Read_Index + 1);
 
          --  Cells between Write_Index and Read_Index-1 are empty (compaction)
          pragma
            Loop_Invariant
              (for all I in Write_Index .. Read_Index - 1 =>
-                (if I in Start_Index .. End_Index
-                 then Line (I) = Empty_Cell));
+                (if I in Start_Index .. End_Index then Line (I) = Empty_Cell));
 
          declare
             Read_Index_Cell_Value : constant Cell_Value := Line (Read_Index);
@@ -140,7 +155,9 @@ package body Logic.Game is
                      Line (Read_Index) := Empty_Cell;
                      Last_Merged := Write_Index - 1;
                      Any_Merge_Done := True;
-                     if Score <= Score_Type'Last - Score_Type (Merged_Value)
+                     if Merged_Value <= Max_Scorable_Cell
+                       and then
+                         Score <= Score_Type'Last - Score_Type (Merged_Value)
                      then
                         Score := Score + Score_Type (Merged_Value);
                      else
@@ -176,9 +193,8 @@ package body Logic.Game is
    end Slide_And_Merge;
 
    --  Reverses a slice in place (extracted for SPARK verification)
-   procedure Reverse_Slice
-     (S : in out Slice_Type; Size : Board_Size_Type) is
-      Temp       : Cell_Value;
+   procedure Reverse_Slice (S : in out Slice_Type; Size : Board_Size_Type) is
+      Temp : Cell_Value;
    begin
       if Size <= 1 then
          return;
@@ -216,8 +232,8 @@ package body Logic.Game is
 
 
    function Line_Would_Change
-     (Line : Slice_Type;
-      Size : Board_Size_Type;
+     (Line                    : Slice_Type;
+      Size                    : Board_Size_Type;
       Iterate_Ascending_Index : Boolean) return Boolean
    is
       Copy         : Slice_Type := Line;
@@ -306,7 +322,7 @@ package body Logic.Game is
                  (Line,
                   Size,
                   Iterate_Ascending_Index => True,
-                  Score => Line_Score);
+                  Score                   => Line_Score);
                if Score <= Score_Type'Last - Line_Score then
                   Score := Score + Line_Score;
                else
@@ -326,7 +342,7 @@ package body Logic.Game is
                  (Line,
                   Size,
                   Iterate_Ascending_Index => False,
-                  Score => Line_Score);
+                  Score                   => Line_Score);
                if Score <= Score_Type'Last - Line_Score then
                   Score := Score + Line_Score;
                else
@@ -346,7 +362,7 @@ package body Logic.Game is
                  (Line,
                   Size,
                   Iterate_Ascending_Index => True,
-                  Score => Line_Score);
+                  Score                   => Line_Score);
                if Score <= Score_Type'Last - Line_Score then
                   Score := Score + Line_Score;
                else
@@ -366,7 +382,7 @@ package body Logic.Game is
                  (Line,
                   Size,
                   Iterate_Ascending_Index => False,
-                  Score => Line_Score);
+                  Score                   => Line_Score);
                if Score <= Score_Type'Last - Line_Score then
                   Score := Score + Line_Score;
                else

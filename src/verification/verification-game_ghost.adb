@@ -12,12 +12,12 @@ package body Verification.Game_Ghost is
       Sum : Natural := 0;
    begin
       for I in S'Range loop
-         pragma
-           Loop_Invariant
-             (Sum
-              <= Natural (I - S'First)
-                 * Natural (Max_Valid_Cell_Value));
-         Sum := Sum + Natural (S (I));
+         pragma Loop_Invariant (Sum <= Natural'Last);
+         if Sum <= Natural'Last - Natural (S (I)) then
+            Sum := Sum + Natural (S (I));
+         else
+            return Natural'Last;
+         end if;
       end loop;
       return Sum;
    end Slice_Sum;
