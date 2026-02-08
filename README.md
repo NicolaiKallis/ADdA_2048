@@ -104,5 +104,5 @@ High scores are saved to a `.highscore` file located at the project root.
 
 # 🧩 Known Limitations
 
-- SPARK proof excludes I/O and randomness-related units (marked `SPARK_Mode => Off`).
-- (Input is line-based; only the first character is used.)
+- SPARK proof excludes I/O and randomness-related units (marked `SPARK_Mode => Off`)
+- In Docker, high scores are not persisted across sessions by default (use a bind mount to keep `.highscore`)
