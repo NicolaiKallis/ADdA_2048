@@ -392,7 +392,8 @@ package body Logic.Game is
          return False;
       end if;
       N := Logic.Random.Random_Index (C);
-      -- TODO: Need mapping to random index to static board index
+      --  Map the random rank N (1..number of empty cells) to concrete
+      --  board coordinates by scanning empties in row-major order.
       Get_Empty_Cell (Board, Size, N, Row, Col);
       Board (Row, Col) := Logic.Random.Generate_Random_Cell_Value;
       return True;
