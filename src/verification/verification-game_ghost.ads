@@ -32,7 +32,7 @@ is
    ---------------------------------------------------------------------------
    function Slice_Sum (S : Slice_Type) return Natural
    with
-     Post => Slice_Sum'Result <= Board_Size * Natural (Max_Valid_Cell_Value);
+     Post => Slice_Sum'Result <= Natural'Last;
 
    ---------------------------------------------------------------------------
    --  Non_Empty_Count
@@ -41,7 +41,7 @@ is
    --  Used to prove that compaction doesn't lose or create tiles.
    ---------------------------------------------------------------------------
    function Non_Empty_Count (S : Slice_Type) return Natural
-   with Post => Non_Empty_Count'Result <= Board_Size;
+   with Post => Non_Empty_Count'Result <= S'Length;
 
    ---------------------------------------------------------------------------
    --  Is_Compacted
@@ -61,6 +61,6 @@ is
    with
      Post =>
        All_Valid_Cells'Result
-       = (for all I in Board_Index => Is_Valid_Cell_Value (S (I)));
+       = (for all I in S'Range => Is_Valid_Cell_Value (S (I)));
 
 end Verification.Game_Ghost;

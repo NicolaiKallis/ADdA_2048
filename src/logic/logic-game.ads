@@ -6,65 +6,84 @@ with Verification.Game_Ghost;
 
 package Logic.Game is
 
-   function Count_Empty_Cells (Board : Board_Type) return Natural
+   function Count_Empty_Cells
+     (Board : Board_Type; Size : Board_Size_Type) return Natural
    with
      Pre  => Is_Valid_Board (Board),
-     Post => Count_Empty_Cells'Result in 0 .. Board_Size * Board_Size;
+     Post => Count_Empty_Cells'Result in 0 .. Size * Size;
 
-   function Is_Board_Full (Board : Board_Type) return Boolean
+   function Is_Board_Full
+     (Board : Board_Type; Size : Board_Size_Type) return Boolean
    with
      Pre  => Is_Valid_Board (Board),
-     Post => Is_Board_Full'Result = (Count_Empty_Cells (Board) = 0);
+     Post => Is_Board_Full'Result = (Count_Empty_Cells (Board, Size) = 0);
 
-   procedure Initialize_New_Game (State : out Game_State)
+   procedure Initialize_New_Game
+     (State : out Game_State; Size : Board_Size_Type)
    with
      Post =>
        State.Status = Playing
+       and then State.Size = Size
        and then State.Move_Count = 0
        and then State.Score = 0
        and then Is_Valid_Board (State.Board);
 
-   procedure Initialize_Board (Board : out Board_Type)
+   procedure Initialize_Board
+     (Board : out Board_Type; Size : Board_Size_Type)
    with
      Post =>
        (for some R in Board_Index =>
-          (for some C in Board_Index => Board (R, C) = 2 or Board (R, C) = 4))
+          (R <= Board_Index (Size)
+           and then
+             (for some C in Board_Index =>
+                (C <= Board_Index (Size)
+                 and then (Board (R, C) = 2 or Board (R, C) = 4)))))
        and then Is_Valid_Board (Board);
 
-   function Add_Random_Tile (Board : in out Board_Type) return Boolean
+   function Add_Random_Tile
+     (Board : in out Board_Type; Size : Board_Size_Type) return Boolean
    with SPARK_Mode => Off;
 
    function Process_Move
      (Board     : in out Board_Type;
+      Size      : Board_Size_Type;
       Direction : Direction_Type;
       Score     : out Score_Type) return Boolean
    with SPARK_Mode => Off;
 
    procedure Move_Tiles
      (Board     : in out Board_Type;
+      Size      : Board_Size_Type;
       Direction : Direction_Type;
       Score     : out Score_Type)
    with
      Pre  =>
-       Is_Valid_Board (Board) and then Is_Move_Possible (Board, Direction),
+       Is_Valid_Board (Board)
+       and then Is_Move_Possible (Board, Size, Direction),
      Post => True;
 
    function Is_Move_Possible
-     (Board : Board_Type; Direction : Direction_Type) return Boolean
+     (Board : Board_Type; Size : Board_Size_Type; Direction : Direction_Type)
+      return Boolean
    with Pre => Is_Valid_Board (Board);
 
-   function Is_Any_Move_Possible (Board : Board_Type) return Boolean
+   function Is_Any_Move_Possible
+     (Board : Board_Type; Size : Board_Size_Type) return Boolean
    with Pre => Is_Valid_Board (Board);
 
-   function Has_Victory_Tile (Board : Board_Type) return Boolean
+   function Has_Victory_Tile
+     (Board : Board_Type; Size : Board_Size_Type) return Boolean
    with
      Pre  => Is_Valid_Board (Board),
      Post =>
        (if Has_Victory_Tile'Result
         then
           (for some R in Board_Index =>
-             (for some C in Board_Index =>
-                Board (R, C) >= Victory_Tile_Value)));
+             (R <= Board_Index (Size)
+              and then
+                (for some C in Board_Index =>
+                   (C <= Board_Index (Size)
+                    and then Board (R, C) >= Victory_Tile_Value)))));
 
    -- Call this after each move to detect victory or game over
    procedure Update_Game_Status (State : in out Game_State)
@@ -81,15 +100,22 @@ private
 
    procedure Get_Empty_Cell
      (Board  : Board_Type;
+      Size   : Board_Size_Type;
       N      : Positive;
       Row    : out Board_Index;
       Column : out Board_Index)
    with
-     Pre  => Is_Valid_Board (Board) and then N <= Count_Empty_Cells (Board),
-     Post => Row in Board_Index and then Column in Board_Index;
+     Pre  =>
+      Is_Valid_Board (Board) and then N <= Count_Empty_Cells (Board, Size),
+    Post =>
+      Row in Board_Index
+      and then Column in Board_Index
+      and then Row <= Board_Index (Size)
+      and then Column <= Board_Index (Size);
 
    --  Helper method to reverse a slice in place
-   procedure Reverse_Slice (S : in out Slice_Type)
+   procedure Reverse_Slice
+     (S : in out Slice_Type; Size : Board_Size_Type)
    with Pre => True, Post => True;
 
    ---------------------------------------------------------------------------
@@ -136,11 +162,13 @@ private
    --  Step 4: Read=4 (4), Write=2 -> place at 2, Write=3  [4, 4, 0, 0]
    --  Result: [4, 4, 0, 0]
    ---------------------------------------------------------------------------
-   procedure Slide_And_Merge (Line : in out Slice_Type; Score : out Score_Type)
+   procedure Slide_And_Merge
+     (Line : in out Slice_Type; Size : Board_Size_Type; Score : out Score_Type)
    with Pre => True, Post => True;
 
    procedure Process_Slice
      (Slice                   : in out Slice_Type;
+      Size                    : Board_Size_Type;
       Iterate_Ascending_Index : Boolean;
       Score                   : out Score_Type)
    with Pre => Verification.Game_Ghost.All_Valid_Cells (Slice), Post => True;

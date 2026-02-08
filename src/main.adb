@@ -27,7 +27,7 @@ begin
    end case;
 
    Logic.History.Initialize;
-   Initialize_New_Game (State);
+   Initialize_New_Game (State, Menu_Result.Board_Size);
    Show_Game (State);
 
    loop

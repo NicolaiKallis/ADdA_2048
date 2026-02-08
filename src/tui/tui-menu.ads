@@ -6,7 +6,8 @@ package TUI.Menu is
 
    type Menu_Selection is record
       Action     : Menu_Action;
-      Board_Size : Positive := Types.Game_Types.Board_Size;
+      Board_Size : Types.Game_Types.Board_Size_Type :=
+        Types.Game_Types.Default_Board_Size;
    end record;
 
    function Get_Menu_Selection return Menu_Selection;

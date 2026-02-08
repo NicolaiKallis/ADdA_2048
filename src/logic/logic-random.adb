@@ -11,7 +11,8 @@ package body Logic.Random is
 
    -- For both following subtytes first we define the range of possible values
    -- then we create a customized version of the random library specifically for that range
-   subtype Cell_Position_Range is Natural range 1 .. Board_Size * Board_Size;
+   subtype Cell_Position_Range is
+     Natural range 1 .. Max_Board_Size * Max_Board_Size;
    package Random_Position_Gen is new
      Ada.Numerics.Discrete_Random (Cell_Position_Range);
    Random_Pos_Gen : Random_Position_Gen.Generator;

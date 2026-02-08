@@ -11,7 +11,9 @@ package TUI.Display is
    with Pre => Types.Game_Types.Is_Valid_Board (State.Board);
 
    -- Display just the board grid
-   procedure Show_Board (Board : Types.Game_Types.Board_Type)
+   procedure Show_Board
+     (Board : Types.Game_Types.Board_Type;
+      Size  : Types.Game_Types.Board_Size_Type)
    with Pre => Types.Game_Types.Is_Valid_Board (Board);
 
    -- Display the statistics line (high score and moves)

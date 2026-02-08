@@ -52,14 +52,17 @@ package body Logic.User is
       Success    : Boolean;
       Ignored    : Boolean;
    begin
-      if Logic.Game.Is_Move_Possible (State.Board, Direction) then
+      if Logic.Game.Is_Move_Possible (State.Board, State.Size, Direction) then
          Move_Executed := True;
 
          -- Save state before move for undo
          Logic.History.Save_Before_Move (State);
 
          Success :=
-           Logic.Game.Process_Move (State.Board, Direction, Move_Score);
+           Logic.Game.Process_Move (State.Board,
+                                    State.Size,
+                                    Direction,
+                                    Move_Score);
          State.Move_Count := State.Move_Count + 1;
          State.Score := State.Score + Move_Score;
 
@@ -129,7 +132,7 @@ package body Logic.User is
             return False;
 
          when Cmd_Restart  =>
-            Logic.Game.Initialize_New_Game (State);
+            Logic.Game.Initialize_New_Game (State, State.Size);
             Logic.History.Initialize;
             return False;
 

@@ -2,6 +2,7 @@
 
 with Ada.Text_IO;
 with Ada.Strings.Fixed;
+with Ada.Strings.Unbounded;
 with Ada.Characters.Latin_1;
 with Types.Game_Types;
 with Logic.User; use Logic.User;
@@ -30,15 +31,26 @@ package body TUI.Display is
       end if;
    end Format_Cell;
 
-   procedure Show_Board (Board : Board_Type) is
-      Horizontal_Line : constant String := "+-----+-----+-----+-----+";
+   function Build_Horizontal_Line (Columns : Positive) return String is
+      Line : Ada.Strings.Unbounded.Unbounded_String;
+   begin
+      for I in 1 .. Columns loop
+         Ada.Strings.Unbounded.Append (Line, "+-----");
+      end loop;
+      Ada.Strings.Unbounded.Append (Line, "+");
+      return Ada.Strings.Unbounded.To_String (Line);
+   end Build_Horizontal_Line;
+
+   procedure Show_Board (Board : Board_Type; Size : Board_Size_Type) is
+      Horizontal_Line : constant String :=
+        Build_Horizontal_Line (Positive (Size));
       Vertical_Line   : constant String := "|";
    begin
       Ada.Text_IO.Put_Line (Horizontal_Line);
 
-      for Row in Board_Index loop
+      for Row in Board_Index range 1 .. Board_Index (Size) loop
          Ada.Text_IO.Put (Vertical_Line);
-         for Col in Board_Index loop
+         for Col in Board_Index range 1 .. Board_Index (Size) loop
             Ada.Text_IO.Put (Format_Cell (Board (Row, Col)));
             Ada.Text_IO.Put (Vertical_Line);
          end loop;
@@ -117,7 +129,7 @@ package body TUI.Display is
       Ada.Text_IO.Put ("Score: ");
       Ada.Text_IO.Put_Line (Score_Type'Image (State.Score));
       Ada.Text_IO.New_Line;
-      Show_Board (State.Board);
+      Show_Board (State.Board, State.Size);
       Ada.Text_IO.New_Line;
       Show_Status_Message (State.Status);
    end Show_Game;
