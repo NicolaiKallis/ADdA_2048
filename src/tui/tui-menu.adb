@@ -26,7 +26,7 @@ package body TUI.Menu is
       Ada.Text_IO.Put_Line ("=== 2048 ===");
       Ada.Text_IO.Put_Line ("1) Start game");
       Ada.Text_IO.Put_Line ("2) Rules");
-      Ada.Text_IO.Put_Line ("3) Help");
+      Ada.Text_IO.Put_Line ("3) Commands");
       Ada.Text_IO.Put_Line ("Q) Quit");
       Ada.Text_IO.Put ("Select: ");
    end Show_Start_Menu;
@@ -47,7 +47,7 @@ package body TUI.Menu is
    procedure Show_Help is
    begin
       Ada.Text_IO.New_Line;
-      Ada.Text_IO.Put_Line ("--- Help / Commands ---");
+      Ada.Text_IO.Put_Line ("--- Commands ---");
       Ada.Text_IO.Put_Line ("W/A/S/D : Move tiles");
       Ada.Text_IO.Put_Line ("U       : Undo");
       Ada.Text_IO.Put_Line ("Y       : Redo");
@@ -75,7 +75,7 @@ package body TUI.Menu is
       loop
          Ada.Text_IO.New_Line;
          Ada.Text_IO.Put
-           ("Board size ("
+           ("Enter board dimension for an NxN grid ("
             & Min_Size_Text
             & "-"
             & Max_Size_Text
