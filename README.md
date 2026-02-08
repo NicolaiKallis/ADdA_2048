@@ -1,108 +1,111 @@
-# 🎮 ADDA 2048 (Ada/SPARK)
+# AD(d)A 2️⃣0️⃣4️⃣8️⃣
 
-Terminal-based 2048 implementation in Ada with formal verification using GNATprove.
+ADdA_2048 is a terminal-based implementation of the classic 2048 sliding-tile puzzle game, written in Ada and designed with formal verification in mind using SPARK/GNATprove.
 
-# ✅ Requirements
+# 🚀 Build And Run
 
-- GNAT (Ada compiler)
-- Alire (`alr`)
-- GNATprove (SPARK toolset)
+## 🛠️ Toolchain Used
+- Alire: `2.0.2`
+- Selected Alire toolchain:
+  - `gnat_native 14.2.1` (default)
+  - `gprbuild 22.0.1` (default)
+- Dependency crate:
+  - `gnatprove 14.1.1` (from `alire.toml`)
 
-# 🚀 Quick Start
-
-Build:
-
-```sh
-alr build
+### 🔎 Check your local setup:
+```
+alr toolchain
+alr --version
 ```
 
-Run:
+## 🔨 Build and run the project using Alire
 
-```sh
+```
+alr build
 alr run
 ```
 
-# 🐳 Docker
+## ✅ Proof (GNATprove)
+Project proof defaults are in `adda_2048.gpr`:
+- `--mode=prove`
+- `--level=2`
+- `--prover=all`
+- `--timeout=60`
 
-Build the image:
+▶️ Run:
+```sh
+alr exec -- gnatprove -P adda_2048.gpr
+```
 
+📄 Proof output:
+```text
+obj/development/gnatprove/gnatprove.out
+```
+
+
+## 🐳 Build and run using Docker
+Build:
 ```sh
 docker build -t adda_2048 .
 ```
 
-To pin a different Alire release:
-
-```sh
-docker build -t adda_2048 --build-arg ALIRE_VERSION=2.1.0 .
-```
-
-Run the game:
-
+Run:
 ```sh
 docker run --rm -it adda_2048
 ```
 
-Run GNATprove:
-
+Run proof in container:
 ```sh
-docker run --rm -it adda_2048 alr exec -- gnatprove -P adda_2048.gpr --mode=prove --level=1
+docker run --rm -it adda_2048 alr exec -- gnatprove -P adda_2048.gpr
 ```
 
-## 🎮 Controls:
-- `W/A/S/D` = move
-- `U` = undo
-- `Y` = redo
-- `R` = restart
-- `C` = continue after victory
-- `Q` = quit
-
-Note: if you enter more than one character on a line, only the first is used.
-
-## 📜 Rules of 2048 (Brief)
-
-- Combine equal tiles by moving in one direction; merged tiles add to score.
-- After each valid move, a new tile (2 or 4) appears.
-- You win when a tile reaches 2048 (you may continue for a higher score).
-- The game ends when no moves are possible.
-
-## ✅ SPARK Verification (GNATprove)
-
-Run GNATprove via Alire:
-
-```sh
-alr exec -- gnatprove -P adda_2048.gpr --mode=prove --level=1
-```
-
-The proof summary is written to:
-
-```
-obj/development/gnatprove/gnatprove.out
-```
-
-To check success, look for `Unproved` being empty/zero in the summary table.
-
-### 🧪 Proof scope:
-- Proven units: `logic-game`, `logic-history`, `types-game_types` (and supporting ghost functions)
-- Excluded from SPARK: I/O and randomness (`tui-*`, `logic-random`, `logic-highscore`, `main`)
-
-### 👻 Ghost methods:
-- Defined in `src/logic/logic-game.ads` and implemented in `src/logic/logic-game.adb`.
-- Used only for proof (e.g., slice sums, compaction checks) to support GNATprove without affecting runtime behavior.
 
 
-# 🧭 Project Layout
+# 📜 Rules of 2048
 
-- `src/main.adb` — program entry point
-- `src/logic/` — game logic, history, random tiles, user commands
-- `src/types/` — core types and invariants
-- `src/tui/` — terminal UI (display + input)
+  - The game is played on a square board (default size is 4x4).
+  - At the start of the game, 2 tiles spawn that each hold either a 2 or a 4.
+  - Combine equal tiles by moving in one direction; merged tiles add to score.
+  - After each valid move, a new tile (2 or 4) appears.
+  - The probability of spawning a 2 is 90% (a 4 spawns with a probability of 10%).
+  - You win when a tile reaches 2048 (you may continue for a higher score).
+  - The game ends when no moves are possible.
 
-## 🏆 High Score Storage
+## 🎮 Controls
+- `W/A/S/D`: move
+- `U`: undo
+- `Y`: redo
+- `R`: restart
+- `C`: continue after hitting 2048
+- `Q`: quit
 
-High scores are saved to a `.highscore` file located at the project root.
+### 📝 Input notes:
+- Only the first character from each input line is used.
+- Extra characters are ignored with a warning.
+
+# 🧭 Repository Layout
+- `src/main.adb`: entry point
+- `src/logic/`: game logic, history, random tiles, high score, command handling
+- `src/tui/`: terminal menu, input, display
+- `src/types/`: core game types and invariants
+- `src/verification/`: ghost helpers used by contracts/proofs
+- `config/`: Alire-generated project configuration
+
+## 🧩 Notes
+- Some units are intentionally `SPARK_Mode => Off` (I/O, randomness, file persistence paths).
+- In Docker, `.highscore` is ephemeral unless mounted from host storage.
+
+
+# ✨ Special implementation features
+- Variable board sizes (`4x4` to `8x8`) selected at startup.
+- Undo/redo history (`U`/`Y`) with bounded stack.
+- High-score tracking per board size, persisted to `.highscore`.
+- SPARK-oriented contracts in game/types/history code.
+- Ghost helpers for proof in `src/verification/verification-game_ghost.*` and `src/logic/logic-history.ads`.
+
 
 
 # 🧩 Known Limitations
 
-- SPARK proof excludes I/O and randomness-related units (marked `SPARK_Mode => Off`)
-- In Docker, high scores are not persisted across sessions by default (use a bind mount to keep `.highscore`)
+  - SPARK proof excludes I/O and randomness-related units (marked `SPARK_Mode => Off`).
+  - In Docker, high scores are not persisted across sessions by default (use a bind mount to keep `.highscore`).
