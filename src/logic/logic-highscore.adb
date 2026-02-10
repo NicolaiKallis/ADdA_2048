@@ -14,10 +14,14 @@ package body Logic.Highscore is
       loop
          -- NOTE: These files need to be present to run an Ada program using alire
          -- so they are good candidates to retrieve the root directory in all cases
-         if Ada.Directories.Exists (Search_Dir & "/alire.toml")
-           or else Ada.Directories.Exists (Search_Dir & "/adda_2048.gpr")
+         if Ada.Directories.Exists
+             (Ada.Directories.Compose (Search_Dir, "alire.toml"))
+           or else Ada.Directories.Exists
+             (Ada.Directories.Compose (Search_Dir, "adda_2048.gpr"))
          then
-            return Search_Dir & "/" & Default_Highscore_File;
+            return Ada.Directories.Compose
+              (Containing_Directory => Search_Dir,
+               Name                 => Default_Highscore_File);
          end if;
 
          -- Try parent directory
