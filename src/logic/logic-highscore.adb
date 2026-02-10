@@ -15,13 +15,15 @@ package body Logic.Highscore is
          -- NOTE: These files need to be present to run an Ada program using alire
          -- so they are good candidates to retrieve the root directory in all cases
          if Ada.Directories.Exists
-             (Ada.Directories.Compose (Search_Dir, "alire.toml"))
-           or else Ada.Directories.Exists
-             (Ada.Directories.Compose (Search_Dir, "adda_2048.gpr"))
+              (Ada.Directories.Compose (Search_Dir, "alire.toml"))
+           or else
+             Ada.Directories.Exists
+               (Ada.Directories.Compose (Search_Dir, "adda_2048.gpr"))
          then
-            return Ada.Directories.Compose
-              (Containing_Directory => Search_Dir,
-               Name                 => Default_Highscore_File);
+            return
+              Ada.Directories.Compose
+                (Containing_Directory => Search_Dir,
+                 Name                 => Default_Highscore_File);
          end if;
 
          -- Try parent directory
@@ -111,10 +113,24 @@ package body Logic.Highscore is
                     Trimmed (Cleaned (Cleaned'First .. Delim_Pos - 1));
                   Score_Str : constant String :=
                     Trimmed (Cleaned (Delim_Pos + 1 .. Cleaned'Last));
+                  X_Pos     : Natural := 0;
                   Size_Val  : Board_Size_Type;
                   Score_Val : Score_Type;
                begin
-                  Size_Val := Board_Size_Type'Value (Size_Str);
+                  for I in Size_Str'Range loop
+                     if Size_Str (I) = 'x' or else Size_Str (I) = 'X' then
+                        X_Pos := I;
+                        exit;
+                     end if;
+                  end loop;
+
+                  if X_Pos = 0 then
+                     Size_Val := Board_Size_Type'Value (Size_Str);
+                  else
+                     Size_Val :=
+                       Board_Size_Type'Value
+                         (Trimmed (Size_Str (Size_Str'First .. X_Pos - 1)));
+                  end if;
                   Score_Val := Score_Type'Value (Score_Str);
                   Scores (Size_Val) := Score_Val;
                exception
